@@ -1,0 +1,760 @@
+<!DOCTYPE html>  <!-- HTML5 Doctype declaration -->
+<html lang="en">  <!-- HTML root element with English language specification -->
+<head>  <!-- Head section containing metadata and resource links -->
+    <meta charset="UTF-8">  <!-- UTF-8 character encoding -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  <!-- Responsive viewport meta tag -->
+    <title>Books - Digital Library System</title>  <!-- Page title -->
+
+    <!-- Tailwind CSS External Stylesheet -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
+    <!-- Firebase JavaScript SDK Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore-compat.js"></script>
+
+    <!-- Custom Firebase Configuration Script -->
+    <script src="js/firebaseConfig.js" defer></script>
+
+    <!-- Custom Books Page JavaScript -->
+    <script src="js/books.js" defer></script>
+
+    <!-- EPUB.js Library for EPUB Document Handling -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/epubjs/dist/epub.min.js"></script>
+
+    <!-- PDF.js Library for PDF Document Rendering -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
+
+    <!-- Inline CSS Styles -->
+    <style>
+        /* Book Card Styling */
+        .book-card {
+            height: 520px; /* Fixed height for consistent card layout */
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Book Thumbnail Wrapper Styling */
+        .book-thumbnail-wrapper {
+            height: 320px; /* Fixed height for thumbnail container */
+            width: 100%;
+            overflow: hidden;
+            background-color: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Book Thumbnail Image Styling */
+        .book-thumbnail {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* Maintain aspect ratio */
+            cursor: pointer;
+        }
+
+        /* Additional CSS classes */
+        .book-title {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .book-description-wrapper {
+            height: 3em; /* Fixed height for 2 lines */
+            position: relative;
+            margin-bottom: 1rem;
+        }
+
+        .book-description {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.5em;
+        }
+
+        /* Line clamping utility classes */
+        .line-clamp-1 {
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            height: 2.5em;
+        }
+
+        .view-trigger {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">  <!-- Body tag with light gray background -->
+    <header class="bg-blue-600 text-white py-4">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center">
+                <!-- Left - Website Logo -->
+                <div class="text-xl font-bold">
+                    Digital Library
+                </div>
+    
+                <!-- Center - Page Title -->
+                <h1 class="text-2xl font-bold">Books</h1>
+    
+                <!-- Right - Navigation -->
+                <nav class="flex items-center space-x-4">
+                    <a href="index.html" class="text-white hover:text-blue-200">Home</a>
+                    <a href="profile.html" class="text-white hover:text-blue-200">Profile</a>
+                    <button id="logout" class="bg-white text-blue-600 px-3 py-1 rounded hover:bg-blue-100">
+                        Logout
+                    </button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto my-8">
+        <nav class="flex justify-center space-x-4 mb-8">
+            <button data-section="view-books" class="nav-link text-blue-600 hover:text-blue-800">
+                View Books
+            </button>
+            <button data-section="search-books" class="nav-link text-blue-600 hover:text-blue-800">
+                Search Books
+            </button>
+            <button data-section="my-bookmarks" class="nav-link text-blue-600 hover:text-blue-800 user-only hidden">
+                My Bookmarks
+            </button>
+            <button data-section="book-suggestions" class="nav-link text-blue-600 hover:text-blue-800 user-only hidden">
+                Book Suggestions
+            </button>
+            <button data-section="admin-book-management" class="nav-link text-blue-600 hover:text-blue-800 admin-only hidden">
+                Admin Book Management
+            </button>
+            <button data-section="system-statistics" class="nav-link text-blue-600 hover:text-blue-800 admin-only hidden">
+                System Statistics
+            </button>
+            <button data-section="review-management" class="nav-link text-blue-600 hover:text-blue-800 admin-only hidden">
+                Review Management
+            </button>
+        </nav>
+        <!-- View Books Section -->
+        <section id="view-books" class="section-content bg-white shadow-md rounded-lg p-6 mb-8">
+            <div class="flex">
+                <!-- Sidebar for Sorting and Filtering -->
+                <div class="w-1/4 pr-6 border-r">
+                    <h3 class="text-lg font-semibold mb-4">Filter & Sort</h3>
+                    
+                    <!-- Sort By Options -->
+                    <div class="mb-4">
+                        <h4 class="font-medium mb-2">Sort By</h4>
+                        <select id="sort-options" class="w-full px-3 py-2 border rounded">
+                            <option value="name-asc">Name (A-Z)</option>
+                            <option value="name-desc">Name (Z-A)</option>
+                            <option value="date-new">Date (Newest First)</option>
+                            <option value="date-old">Date (Oldest First)</option>
+                            <option value="popularity">Popularity</option>
+                        </select>
+                    </div>
+
+                    <!-- Genre Filter -->
+                    <div class="mb-4">
+                        <h4 class="font-medium mb-2">Genres</h4>
+                        <div class="space-y-2 genre-filters">
+                            <!-- Genres will be dynamically inserted here -->
+                        </div>
+                    </div>
+
+                    <!-- Apply Filters Button -->
+                    <button id="apply-filters" class="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                        Apply Filters
+                    </button>
+                </div>
+
+                <!-- Book Catalog -->
+                <div class="w-3/4 pl-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold">Available Books</h2>
+                    </div>
+                    
+                    <!-- Book Loading State -->
+                    <div id="books-loading" class="text-center py-8">
+                        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                        <p class="text-gray-600">Loading books...</p>
+                    </div>
+
+                    <!-- Book Error State -->
+                    <div id="books-error" class="hidden text-center py-8">
+                        <p class="text-red-600">Error loading books. Please try again.</p>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div id="books-empty" class="hidden text-center py-8">
+                        <p class="text-gray-600">No books found.</p>
+                    </div>
+
+                    <!-- Book Catalog Grid -->
+                    <div id="book-catalog" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Books will be dynamically inserted here -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Search Books Section -->
+        <section id="search-books" class="section-content bg-white shadow-md rounded-lg p-6 mb-8 hidden">
+            <h2 class="text-xl font-semibold mb-4">Search Books</h2>
+            <div class="flex gap-4 mb-6">
+                <input type="text" id="search-input" class="flex-1 px-4 py-2 border rounded" placeholder="Search by title, author, or genre">
+                <button id="search-button" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">Search</button>
+            </div>
+            <div class="mt-4">
+                <label for="genre-filter" class="block mb-2">Filter by Genre:</label>
+                <select id="genre-filter" class="w-full px-3 py-2 border rounded">
+                    <!-- Genre options will be dynamically inserted here -->
+                </select>
+            </div>
+            <div id="search-results" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-6">
+                <!-- Search results will be dynamically inserted here -->
+            </div>
+        </section>
+
+        <!-- My Bookmarks Section -->
+        <section id="my-bookmarks" class="section-content bg-white shadow-md rounded-lg p-6 mb-8 hidden">
+            <h2 class="text-xl font-semibold mb-4">My Bookmarks</h2>
+            <div id="bookmark-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- Bookmarked books will be dynamically inserted here -->
+            </div>
+        </section>
+        <!-- Book Suggestions Section -->
+        <section id="book-suggestions" class="section-content bg-white shadow-md rounded-lg p-6 mb-8 hidden">
+            <h2 class="text-xl font-semibold mb-4">Suggest a Book</h2>
+            <form id="suggestion-form">
+                <div class="mb-3">
+                    <input type="text" id="suggestion-title" class="w-full px-3 py-2 border rounded" placeholder="Book Title" required>
+                </div>
+                <div class="mb-3">
+                    <input type="text" id="suggestion-author" class="w-full px-3 py-2 border rounded" placeholder="Author" required>
+                </div>
+                <div class="mb-3">
+                    <textarea id="suggestion-description" class="w-full px-3 py-2 border rounded" placeholder="Description" required></textarea>
+                </div>
+                <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded">Submit Suggestion</button>
+            </form>
+            <div id="suggestion-status" class="mt-4"></div>
+        </section>
+
+        <!-- Admin Book Management Section -->
+        <section id="admin-book-management" class="section-content bg-white shadow-md rounded-lg p-6 mb-8 hidden">
+            <h2 class="text-xl font-semibold mb-4">Admin Book Management</h2>
+            <button id="add-book" class="bg-blue-500 text-white px-4 py-2 rounded mb-6">Add Book</button>
+            <!-- Replace your current Add Book form with this -->
+            <div id="add-book-modal" class="fixed inset-0 hidden z-50" style="background-color: rgba(0, 0, 0, 0.5);">
+                <div class="container mx-auto px-4 h-full flex items-center justify-center">
+                    <div class="bg-white rounded-lg w-full max-w-6xl">
+                        <div class="p-4 border-b flex justify-between items-center bg-gray-50">
+                            <h3 class="text-xl font-semibold">Add New Book</h3>
+                            <button id="close-add-modal" class="text-gray-500 hover:text-gray-700">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                        <form id="add-book-form" class="flex-1 p-6 overflow-y-auto">
+                            <div class="flex gap-6">
+                                <!-- Left Column - Cover Image -->
+                                <div class="w-1/4">
+                                    <div class="sticky top-6">
+                                        <img id="add-cover-preview" src="./assets/images/default-cover.jpg" alt="Book cover" 
+                                            class="w-full rounded-lg shadow-lg object-cover aspect-[3/4] mb-4">
+                                        <input type="file" id="add-cover-upload" accept="image/*" class="hidden">
+                                        <label for="add-cover-upload" 
+                                            class="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 flex items-center justify-center gap-2 cursor-pointer mb-2">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                            </svg>
+                                            Upload Cover
+                                        </label>
+                                        <input type="url" id="add-cover-url" class="w-full px-3 py-2 border rounded" placeholder="Or enter cover URL">
+                                    </div>
+                                </div>
+            
+                                <!-- Right Column - Book Details -->
+                                <div class="w-3/4 space-y-6">
+                                    <div class="grid grid-cols-2 gap-x-8 gap-y-4">
+                                        <div class="space-y-1">
+                                            <label class="text-sm text-gray-600" for="add-title">Title</label>
+                                            <input type="text" id="add-title" class="w-full px-3 py-2 border rounded" required>
+                                        </div>
+                                        <div class="space-y-1">
+                                            <label class="text-sm text-gray-600" for="add-authors">Author(s)</label>
+                                            <input type="text" id="add-authors" class="w-full px-3 py-2 border rounded" required>
+                                        </div>
+                                        <div class="space-y-1">
+                                            <label class="text-sm text-gray-600" for="add-pub-date">Publication Date</label>
+                                            <input type="date" id="add-pub-date" class="w-full px-3 py-2 border rounded">
+                                        </div>
+                                        <div class="space-y-1">
+                                            <label class="text-sm text-gray-600" for="add-isbn">ISBN</label>
+                                            <input type="text" id="add-isbn" class="w-full px-3 py-2 border rounded">
+                                        </div>
+                                        <div class="space-y-1">
+                                            <label class="text-sm text-gray-600" for="add-language">Language</label>
+                                            <input type="text" id="add-language" class="w-full px-3 py-2 border rounded">
+                                        </div>
+                                        <div class="space-y-1">
+                                            <label class="text-sm text-gray-600" for="add-genre">Genre</label>
+                                            <select id="add-genre" class="w-full px-3 py-2 border rounded">
+                                                <option value="">Select Genre</option>
+                                                <option value="Fiction">Fiction</option>
+                                                <option value="Non-Fiction">Non-Fiction</option>
+                                                <option value="Science Fiction">Science Fiction</option>
+                                                <option value="Fantasy">Fantasy</option>
+                                                <option value="Mystery">Mystery</option>
+                                                <option value="Thriller">Thriller</option>
+                                                <option value="Romance">Romance</option>
+                                                <option value="Horror">Horror</option>
+                                                <option value="Biography">Biography</option>
+                                                <option value="History">History</option>
+                                                <option value="Science">Science</option>
+                                                <option value="Technology">Technology</option>
+                                                <option value="Self-Help">Self-Help</option>
+                                                <option value="Business">Business</option>
+                                                <option value="Other">Other</option>
+                                            </select>
+                                            <input 
+                                                type="text" 
+                                                id="add-genre-other" 
+                                                class="w-full px-3 py-2 border rounded mt-2 hidden" 
+                                                placeholder="Specify Genre"
+                                            >
+                                        </div>
+                                        <div class="space-y-1">
+                                            <label class="text-sm text-gray-600" for="add-copyright">Copyright</label>
+                                            <input type="text" id="add-copyright" class="w-full px-3 py-2 border rounded">
+                                        </div>
+                                        <div class="space-y-1">
+                                            <label class="text-sm text-gray-600" for="add-drm">DRM</label>
+                                            <input type="text" id="add-drm" class="w-full px-3 py-2 border rounded">
+                                        </div>
+                                    </div>
+            
+                                    <div class="space-y-2">
+                                        <label class="text-sm text-gray-600" for="add-tags">Keywords/Tags (comma-separated)</label>
+                                        <input type="text" id="add-tags" class="w-full px-3 py-2 border rounded">
+                                    </div>
+            
+                                    <div class="space-y-2">
+                                        <label class="text-sm text-gray-600" for="add-description">Description</label>
+                                        <textarea id="add-description" rows="4" class="w-full px-3 py-2 border rounded"></textarea>
+                                    </div>
+            
+                                    <div class="space-y-2">
+                                        <label class="text-sm text-gray-600" for="add-pdf-link">Book File Link (PDF, EPUB, etc.)</label>
+                                        <input type="url" id="add-pdf-link" class="w-full px-3 py-2 border rounded" required>
+                                    </div>
+            
+                                    <div class="flex gap-4 pt-6">
+                                        <button type="submit" class="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600">
+                                            Add Book
+                                        </button>
+                                        <button type="button" id="cancel-add" class="bg-gray-500 text-white px-6 py-2 rounded hover:bg-gray-600">
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div id="admin-book-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-6">
+                <!-- Book cards will be dynamically inserted here -->
+            </div>
+        </section>
+        <!-- System Statistics Section -->
+        <section id="system-statistics" class="section-content bg-white shadow-md rounded-lg p-6 mb-8 hidden">
+            <h2 class="text-xl font-semibold mb-4">System Statistics</h2>
+            <div id="user-reports" class="mb-4">
+                <!-- User reports will be dynamically inserted here -->
+            </div>
+            <div id="book-reports">
+                <!-- Book reports will be dynamically inserted here -->
+            </div>
+        </section>
+    
+        <!-- Review Management Section -->
+        <section id="review-management" class="section-content bg-white shadow-md rounded-lg p-6 mb-8 hidden">
+            <h2 class="text-xl font-semibold mb-4">Review Management</h2>
+            <div id="review-list">
+                <!-- Reviews will be dynamically inserted here -->
+            </div>
+        </section>
+    
+            <!-- Book Viewer Modal -->
+        <div id="book-viewer" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+            <div class="container mx-auto h-full p-4">
+                <div class="bg-white rounded-lg h-full flex flex-col max-w-6xl mx-auto">
+                    <!-- Header with Likes -->
+                    <div class="p-4 border-b flex justify-between items-center">
+                        <h3 class="text-xl font-semibold" id="viewer-book-title">Book Details</h3>
+                        <div class="flex items-center space-x-4">
+                            <div class="flex items-center">
+                                <button id="like-button" class="mr-2">
+                                    <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                    </svg>
+                                </button>
+                                <span id="likes-count">0</span>
+                            </div>
+                            <button id="close-viewer" class="text-gray-500 hover:text-gray-700">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+        
+                    <!-- Book Details Content -->
+                    <div class="flex-1 p-6 overflow-y-auto">
+                        <div class="flex gap-6">
+                            <!-- Left Column - Cover Image -->
+                            <div class="w-1/4">
+                                <img id="viewer-cover" src="" alt="Book cover" class="w-full rounded-lg shadow-lg">
+                                <div class="mt-4 space-y-2">
+                                    <button id="view-pdf" class="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                                        View PDF
+                                    </button>
+                                    <button id="download-book" class="w-full bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                                        Download
+                                    </button>
+                                </div>
+                                <div class="mt-4 mb-2 text-sm text-gray-600">
+                                    <div class="flex justify-between items-center">
+                                        <span>Views: <span id="viewer-pdf-views" class="font-semibold">0</span></span>
+                                        <span>Downloads: <span id="viewer-pdf-downloads" class="font-semibold">0</span></span>
+                                    </div>
+                                </div>
+                            </div>
+        
+                            <!-- Right Column - Book Details -->
+                            <div class="w-3/4">
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <h4 class="font-semibold">Title</h4>
+                                        <p id="viewer-title"></p>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold">Author</h4>
+                                        <p id="viewer-author"></p>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold">Publication Date</h4>
+                                        <p id="viewer-pub-date"></p>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold">ISBN</h4>
+                                        <p id="viewer-isbn"></p>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold">Language</h4>
+                                        <p id="viewer-language"></p>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold">Genre</h4>
+                                        <p id="viewer-genre"></p>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold">Format</h4>
+                                        <p id="viewer-format"></p>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold">Size</h4>
+                                        <p id="viewer-size"></p>
+                                    </div>
+                                    <div class="col-span-2">
+                                        <h4 class="font-semibold">Description</h4>
+                                        <p id="viewer-description"></p>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold">Copyright</h4>
+                                        <p id="viewer-copyright"></p>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold">DRM</h4>
+                                        <p id="viewer-drm"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+        
+                    <!-- Reviews Section -->
+                    <div id="single-reviews-section" class="p-6 border-t">
+                        <button id="toggle-reviews" class="flex justify-between items-center w-full mb-4 hover:bg-gray-50 p-2 rounded">
+                            <div class="flex items-center">
+                                <h4 class="text-lg font-semibold">Reviews</h4>
+                            </div>
+                            <span class="text-xl font-bold transform transition-transform duration-200">+</span>
+                        </button>
+                        
+                        <div id="reviews-content" class="hidden">
+                            <!-- Add Review Form -->
+                            <div id="add-review-section" class="mb-6">
+                                <form id="review-form" class="space-y-4">
+                                    <div class="rating-section flex items-center space-x-2">
+                                        <span>Rating:</span>
+                                        <div id="star-rating" class="flex">
+                                            <button type="button" class="star-btn" data-rating="1">★</button>
+                                            <button type="button" class="star-btn" data-rating="2">★</button>
+                                            <button type="button" class="star-btn" data-rating="3">★</button>
+                                            <button type="button" class="star-btn" data-rating="4">★</button>
+                                            <button type="button" class="star-btn" data-rating="5">★</button>
+                                        </div>
+                                        <span id="selected-rating">0</span>
+                                    </div>
+                                    <textarea 
+                                        id="review-text" 
+                                        class="w-full px-3 py-2 border rounded" 
+                                        rows="4" 
+                                        placeholder="Write your review here..."
+                                    ></textarea>
+                                    <button 
+                                        type="submit" 
+                                        class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                                    >
+                                        Submit Review
+                                    </button>
+                                </form>
+                            </div>
+        
+                            <!-- Reviews Display Area -->
+                            <div id="reviews-container" class="space-y-4 max-h-96 overflow-y-auto">
+                                <!-- Reviews will be dynamically populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Document Viewer Layout -->
+        <div id="doc-view-layout" class="fixed inset-0 bg-white z-50 hidden">
+            <div class="flex flex-col h-full">
+                <div class="bg-gray-100 p-4 flex justify-between items-center">
+                    <button id="back-to-details" class="text-blue-600 hover:text-blue-800 flex items-center">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                        </svg>
+                        Back to Details
+                    </button>
+                    <button id="doc-download-btn" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                        Download
+                    </button>
+                </div>
+                <div class="flex-1 relative">
+                    <!-- Different document viewers -->
+                    <iframe id="pdf-viewer-frame" class="w-full h-full border-none hidden"></iframe>
+                    <div id="epub-viewer" class="w-full h-full hidden"></div>
+                    <div id="mobi-viewer" class="w-full h-full hidden"></div>
+                    <div id="docx-viewer" class="w-full h-full hidden"></div>
+                    <div id="txt-viewer" class="w-full h-full p-4 bg-white overflow-auto hidden"></div>
+                    
+                    <!-- Loading State -->
+                    <div id="doc-loading" class="absolute inset-0 bg-white bg-opacity-90 flex items-center justify-center">
+                        <div class="text-center">
+                            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+                            <p class="mt-2 text-gray-600">Loading document...</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Error State -->
+                    <div id="doc-error-message" class="hidden absolute inset-0 bg-white flex items-center justify-center">
+                        <div class="text-center text-red-600">
+                            <p class="text-xl mb-2">Unable to load document</p>
+                            <p>Please try downloading instead</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Edit Book Modal -->
+        <div id="edit-book-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+            <div class="container mx-auto h-full p-4">
+                <div class="bg-white rounded-lg h-full flex flex-col max-w-6xl mx-auto">
+                    <div class="p-4 border-b flex justify-between items-center bg-gray-50">
+                        <h3 class="text-xl font-semibold">Edit Book</h3>
+                        <button id="close-edit-modal" class="text-gray-500 hover:text-gray-700">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                    <form id="edit-book-form" class="flex-1 p-6 overflow-y-auto">
+                        <div class="flex gap-6">
+                            <!-- Left Column - Cover Image -->
+                            <div class="w-1/4">
+                                <div class="sticky top-6">
+                                    <img id="edit-cover-preview" src="" alt="Book cover" 
+                                        class="w-full rounded-lg shadow-lg object-cover aspect-[3/4] mb-4">
+                                    <input type="file" id="edit-cover-upload" accept="image/*" class="hidden">
+                                    <label for="edit-cover-upload" 
+                                        class="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 flex items-center justify-center gap-2 cursor-pointer mb-2">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                        Change Cover
+                                    </label>
+                                    <input type="url" id="edit-cover-url" class="w-full px-3 py-2 border rounded" placeholder="Or enter cover URL">
+                                </div>
+                            </div>
+                            <!-- Right Column - Edit Fields -->
+                            <div class="w-3/4 space-y-6">
+                                <div class="grid grid-cols-2 gap-x-8 gap-y-4">
+                                    <div class="space-y-1">
+                                        <label class="text-sm text-gray-600" for="edit-title">Title</label>
+                                        <input type="text" id="edit-title" class="w-full px-3 py-2 border rounded" required>
+                                    </div>
+                                    <div class="space-y-1">
+                                        <label class="text-sm text-gray-600" for="edit-authors">Author(s)</label>
+                                        <input type="text" id="edit-authors" class="w-full px-3 py-2 border rounded" required>
+                                    </div>
+                                    <div class="space-y-1">
+                                        <label class="text-sm text-gray-600" for="edit-pub-date">Publication Date</label>
+                                        <input type="date" id="edit-pub-date" class="w-full px-3 py-2 border rounded">
+                                    </div>
+                                    <div class="space-y-1">
+                                        <label class="text-sm text-gray-600" for="edit-isbn">ISBN</label>
+                                        <input type="text" id="edit-isbn" class="w-full px-3 py-2 border rounded">
+                                    </div>
+                                    <div class="space-y-1">
+                                        <label class="text-sm text-gray-600" for="edit-language">Language</label>
+                                        <input type="text" id="edit-language" class="w-full px-3 py-2 border rounded">
+                                    </div>
+                                    <div class="space-y-1">
+                                        <label class="text-sm text-gray-600" for="edit-genre">Genre</label>
+                                        <input type="text" id="edit-genre" class="w-full px-3 py-2 border rounded">
+                                    </div>
+                                    <div class="space-y-1">
+                                        <label class="text-sm text-gray-600" for="edit-format">Format</label>
+                                        <select id="edit-format" class="w-full px-3 py-2 border rounded">
+                                            <option value="PDF">PDF</option>
+                                            <option value="EPUB">EPUB</option>
+                                            <option value="MOBI">MOBI</option>
+                                        </select>
+                                    </div>
+                                    <div class="space-y-1">
+                                        <label class="text-sm text-gray-600" for="edit-size">File Size</label>
+                                        <input type="text" id="edit-size" class="w-full px-3 py-2 border rounded">
+                                    </div>
+                                    <div class="space-y-1">
+                                        <label class="text-sm text-gray-600" for="edit-copyright">Copyright</label>
+                                        <input type="text" id="edit-copyright" class="w-full px-3 py-2 border rounded">
+                                    </div>
+                                    <div class="space-y-1">
+                                        <label class="text-sm text-gray-600" for="edit-drm">DRM</label>
+                                        <input type="text" id="edit-drm" class="w-full px-3 py-2 border rounded">
+                                    </div>
+                                </div>
+        
+                                <!-- File Link Input - Full Width -->
+                                <div class="space-y-2 col-span-2">
+                                    <label class="text-sm text-gray-600" for="edit-pdf-link">Book File Link</label>
+                                    <input type="url" 
+                                        id="edit-pdf-link" 
+                                        class="w-full px-3 py-2 border rounded" 
+                                        placeholder="Enter book file URL (PDF, EPUB, MOBI, etc.)"
+                                        onchange="detectFileInfo(this.value)">
+                                </div>
+
+                                <!-- Hidden fields for file info -->
+                                <input type="hidden" id="edit-format">
+                                <input type="hidden" id="edit-size">
+
+                                <div class="space-y-2">
+                                    <label class="text-sm text-gray-600" for="edit-tags">Keywords/Tags (comma-separated)</label>
+                                    <input type="text" id="edit-tags" class="w-full px-3 py-2 border rounded">
+                                </div>
+        
+                                <div class="space-y-2">
+                                    <label class="text-sm text-gray-600" for="edit-description">Synopsis/Description</label>
+                                    <textarea id="edit-description" rows="4" class="w-full px-3 py-2 border rounded"></textarea>
+                                </div>
+        
+                                <div class="flex gap-4 pt-6">
+                                    <button type="submit" class="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600">
+                                        Save Changes
+                                    </button>
+                                    <button type="button" id="cancel-edit" class="bg-gray-500 text-white px-6 py-2 rounded hover:bg-gray-600">
+                                        Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+    <!-- Footer Section -->
+    <footer class="bg-blue-600 text-white text-center py-4">
+        <p>&copy; 2023 Digital Library System</p>
+    </footer>
+
+    <!-- Inline JavaScript for Initial Page Setup -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Navigation Links Selection
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('.section-content');
+
+            // Firebase Authentication State Listener
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    // Show common sections for all authenticated users
+                    document.querySelector('[data-section="view-books"]').classList.remove('hidden');
+                    document.querySelector('[data-section="search-books"]').classList.remove('hidden');
+
+                    // Admin-specific sections
+                    if (user.email === 'admin@example.com') {
+                        document.querySelector('[data-section="admin-book-management"]').classList.remove('hidden');
+                        document.querySelector('[data-section="system-statistics"]').classList.remove('hidden');
+                        document.querySelector('[data-section="review-management"]').classList.remove('hidden');
+                    } else {
+                        // User-specific sections
+                        document.querySelector('[data-section="my-bookmarks"]').classList.remove('hidden');
+                        document.querySelector('[data-section="book-suggestions"]').classList.remove('hidden');
+                    }
+                } else {
+                    // Redirect to login if not authenticated
+                    window.location.href = 'index.html';
+                }
+            });
+
+            // Navigation Link Click Event Handlers
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    const targetSection = link.getAttribute('data-section');
+                    sections.forEach(section => {
+                        if (section.id === targetSection) {
+                            section.classList.remove('hidden');
+                        } else {
+                            section.classList.add('hidden');
+                        }
+                    });
+                });
+            });
+
+            // Show first section by default
+            if (sections.length > 0) {
+                sections[0].classList.remove('hidden');
+            }
+        });
+    </script>
+</body>
+</html>

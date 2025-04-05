@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Library System</title>
+    <!-- Tailwind CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <!-- Firebase Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore-compat.js"></script>
+    <!-- Your Firebase Config -->
+    <script src="js/firebaseConfig.js" defer></script>
+    <!-- Your Custom Scripts -->
+    <script src="js/auth.js" defer></script>
+</head>
+<body class="bg-gray-100">
+    <header class="bg-blue-600 text-white text-center py-4">
+        <h1 class="text-2xl font-bold">Welcome to the Digital Library</h1>
+        <nav class="mt-2">
+            <a href="profile.html" class="text-white mx-2 hidden" id="profile-link">Profile</a>
+            <a href="books.html" class="text-white mx-2 hidden" id="books-link">Books</a>
+            <button id="logout" class="bg-white text-blue-600 px-3 py-1 rounded hidden">Logout</button>
+            <button id="login-button" class="text-white mx-2">Login</button>
+            <button id="register-button" class="text-white mx-2">Register</button>
+        </nav>
+    </header>
+    <main class="container mx-auto my-8">
+        <section class="bg-white shadow-md rounded-lg p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-4">About Our Online Library</h2>
+            <p>Our Digital Library System offers a vast collection of books across various genres. Whether you're a student, researcher, or casual reader, you'll find something of interest. Our platform provides easy access to a wide range of digital books, allowing you to read and download them at your convenience.</p>
+        </section>
+        <section class="bg-white shadow-md rounded-lg p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-4">Features</h2>
+            <ul class="list-disc pl-5">
+                <li>Extensive collection of digital books</li>
+                <li>Search and filter books by title, author, or genre</li>
+                <li>Bookmark and rate your favorite books</li>
+                <li>Admin features for managing users and books</li>
+                <li>Secure user authentication and profile management</li>
+            </ul>
+        </section>
+    </main>
+    <footer class="bg-blue-600 text-white text-center py-4">
+        <p>&copy; 2023 Digital Library System</p>
+    </footer>
+
+    <!-- Login Modal -->
+    <div id="login-modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden">
+        <div class="bg-white p-6 rounded-lg shadow-lg">
+            <h3 class="text-lg font-semibold mb-4">Login</h3>
+            <form id="login">
+                <input type="email" id="login-email" class="w-full px-3 py-2 border rounded mb-3" placeholder="Email" required>
+                <input type="password" id="login-password" class="w-full px-3 py-2 border rounded mb-3" placeholder="Password" required>
+                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Login</button>
+            </form>
+            <p><a href="#" id="forgot-password-link" class="text-blue-600 hover:underline">Forgot Password?</a></p>
+            <button id="close-login-modal" class="mt-4 text-red-500 hover:underline">Close</button>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div id="register-modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden">
+        <div class="bg-white p-6 rounded-lg shadow-lg">
+            <h3 class="text-lg font-semibold mb-4">Register</h3>
+            <form id="register">
+                <input type="email" id="register-email" class="w-full px-3 py-2 border rounded mb-3" placeholder="Email" required>
+                <input type="password" id="register-password" class="w-full px-3 py-2 border rounded mb-3" placeholder="Password" required>
+                <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded">Register</button>
+            </form>
+            <button id="close-register-modal" class="mt-4 text-red-500 hover:underline">Close</button>
+        </div>
+    </div>
+
+    <!-- Forgot Password Modal -->
+    <div id="forgot-password-modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden">
+        <div class="bg-white p-6 rounded-lg shadow-lg">
+            <h3 class="text-lg font-semibold mb-4">Reset Password</h3>
+            <form id="forgot-password-form">
+                <input type="email" id="forgot-password-email" class="w-full px-3 py-2 border rounded mb-3" placeholder="Enter your email" required>
+                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Send Reset Email</button>
+            </form>
+            <button id="close-forgot-password-modal" class="mt-4 text-red-500 hover:underline">Close</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const loginButton = document.getElementById('login-button');
+            const registerButton = document.getElementById('register-button');
+            const profileLink = document.getElementById('profile-link');
+            const booksLink = document.getElementById('books-link');
+            const logoutButton = document.getElementById('logout');
+            const loginModal = document.getElementById('login-modal');
+            const registerModal = document.getElementById('register-modal');
+            const forgotPasswordModal = document.getElementById('forgot-password-modal');
+            const closeLoginModal = document.getElementById('close-login-modal');
+            const closeRegisterModal = document.getElementById('close-register-modal');
+            const closeForgotPasswordModal = document.getElementById('close-forgot-password-modal');
+            const forgotPasswordLink = document.getElementById('forgot-password-link');
+            const forgotPasswordForm = document.getElementById('forgot-password-form');
+
+            // Show login modal
+            loginButton.addEventListener('click', () => {
+                loginModal.classList.remove('hidden');
+            });
+
+            // Show register modal
+            registerButton.addEventListener('click', () => {
+                registerModal.classList.remove('hidden');
+            });
+
+            // Show forgot password modal
+            forgotPasswordLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                loginModal.classList.add('hidden');
+                forgotPasswordModal.classList.remove('hidden');
+            });
+
+            // Close login modal
+            closeLoginModal.addEventListener('click', () => {
+                loginModal.classList.add('hidden');
+            });
+
+            // Close register modal
+            closeRegisterModal.addEventListener('click', () => {
+                registerModal.classList.add('hidden');
+            });
+
+            // Close forgot password modal
+            closeForgotPasswordModal.addEventListener('click', () => {
+                forgotPasswordModal.classList.add('hidden');
+            });
+
+            // Handle forgot password form submission
+            forgotPasswordForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const email = document.getElementById('forgot-password-email').value;
+                auth.sendPasswordResetEmail(email)
+                    .then(() => {
+                        alert('Password reset email sent!');
+                        forgotPasswordModal.classList.add('hidden');
+                    })
+                    .catch((error) => {
+                        console.error('Error sending password reset email:', error.message);
+                        alert('Error: ' + error.message);
+                    });
+            });
+
+            // Check if user is logged in
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    // User is logged in
+                    profileLink.classList.remove('hidden');
+                    booksLink.classList.remove('hidden');
+                    logoutButton.classList.remove('hidden');
+                    loginButton.classList.add('hidden');
+                    registerButton.classList.add('hidden');
+                } else {
+                    // User is not logged in
+                    profileLink.classList.add('hidden');
+                    booksLink.classList.add('hidden');
+                    logoutButton.classList.add('hidden');
+                    loginButton.classList.remove('hidden');
+                    registerButton.classList.remove('hidden');
+                }
+            });
+
+            logoutButton.addEventListener('click', () => {
+                auth.signOut().then(() => {
+                    window.location.href = 'index.html';
+                }).catch((error) => {
+                    console.error('Error logging out:', error);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
