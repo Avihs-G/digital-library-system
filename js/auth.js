@@ -1,6 +1,6 @@
 // js/auth.js
 document.addEventListener('DOMContentLoaded', () => {
-    const loginForm = document.getElementById('login');
+    const loginForm = document.getElementById('loginForm');
     const registerForm = document.getElementById('register');
     const forgotPasswordLink = document.getElementById('forgot-password-link');
 
