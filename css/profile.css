@@ -1,0 +1,117 @@
+/* Admin Dashboard Specific Styles */
+
+/* Header Enhancements */
+header .container {
+    @apply px-4 py-3;
+}
+
+.header-title {
+    @apply text-2xl font-bold text-center md:text-left;
+}
+
+/* Main Content Area */
+main.container {
+    @apply px-4 py-6;
+}
+
+/* Tab Navigation */
+.tab-group {
+    @apply inline-flex rounded-md shadow-sm;
+}
+
+.tab-button {
+    @apply px-4 py-2 text-sm font-medium bg-white text-blue-700 hover:bg-blue-50;
+}
+
+.tab-button:first-child {
+    @apply rounded-l-lg;
+}
+
+.tab-button:last-child {
+    @apply rounded-r-lg;
+}
+
+.tab-button:not(:first-child):not(:last-child) {
+    @apply border-l border-r border-gray-200;
+}
+
+/* Section Headers */
+.section-header {
+    @apply bg-gradient-to-r from-blue-600 to-blue-800 px-6 py-4;
+}
+
+.section-title {
+    @apply text-xl font-semibold text-white;
+}
+
+/* Form Styles */
+.grid-form {
+    @apply grid grid-cols-1 md:grid-cols-2 gap-6;
+}
+
+.form-actions {
+    @apply flex flex-wrap gap-3 mt-6;
+}
+
+/* Table Styles */
+.data-table {
+    @apply min-w-full divide-y divide-gray-200;
+}
+
+.data-table thead {
+    @apply bg-gray-50;
+}
+
+.data-table th {
+    @apply px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider;
+}
+
+.data-table td {
+    @apply px-6 py-4 whitespace-nowrap text-sm text-gray-500;
+}
+
+/* Modal Enhancements */
+.modal-overlay {
+    @apply fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 z-50;
+}
+
+.modal-dialog {
+    @apply bg-white rounded-xl shadow-xl w-full max-w-md;
+}
+
+.modal-body {
+    @apply p-6 space-y-4;
+}
+
+/* Detail View Styles */
+.detail-view {
+    @apply bg-gray-50 p-4 rounded-lg border border-gray-200;
+}
+
+.detail-row {
+    @apply flex py-2 border-b border-gray-200;
+}
+
+.detail-label {
+    @apply w-1/3 font-medium text-gray-600;
+}
+
+.detail-value {
+    @apply w-2/3 text-gray-800;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .grid-form {
+        @apply grid-cols-1;
+    }
+    
+    .detail-row {
+        @apply flex-col;
+    }
+    
+    .detail-label, 
+    .detail-value {
+        @apply w-full;
+    }
+}
