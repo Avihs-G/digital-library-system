@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Registration</title>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    button {
+      background-color: #4285f4;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      width: 100%;
+    }
+    button:hover {
+      background-color: #3367d6;
+    }
+    .error {
+      color: red;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Create Your Account</h1>
+  
+  <form id="registerForm">
+    <div class="form-group">
+      <label for="email">Email*</label>
+      <input type="email" id="email" required>
+    </div>
+    
+    <div class="form-group">
+      <label for="password">Password* (min 6 characters)</label>
+      <input type="password" id="password" required minlength="6">
+    </div>
+    
+    <div class="form-group">
+      <label for="fullName">Full Name</label>
+      <input type="text" id="fullName">
+    </div>
+    
+    <div class="form-group">
+      <label for="age">Age</label>
+      <input type="number" id="age" min="13">
+    </div>
+    
+    <div class="form-group">
+      <label for="location">Location (City, Country)</label>
+      <input type="text" id="location">
+    </div>
+    
+    <div class="form-group">
+      <label for="gender">Gender</label>
+      <select id="gender">
+        <option value="">Select</option>
+        <option value="male">Male</option>
+        <option value="female">Female</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+    
+    <button type="button" id="registerBtn">Register</button>
+    <div id="errorMsg" class="error"></div>
+  </form>
+
+  <script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyBL0n0BJsba-CEvYmyOVJ3aTHSntWXNx84",
+        authDomain: "dls-digital-library-system.firebaseapp.com",
+        projectId: "dls-digital-library-system",
+        storageBucket: "dls-digital-library-system.firebasestorage.app",
+        messagingSenderId: "316017046740",
+        appId: "1:316017046740:web:ecdcfd5b8980901f4cf741",
+        measurementId: "G-HY9T2WZJ5V"
+      };
+    
+    firebase.initializeApp(firebaseConfig);
+    
+      // Firebase services
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    // Registration function
+    document.getElementById('registerBtn').addEventListener('click', async function() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const fullName = document.getElementById('fullName').value;
+      const age = document.getElementById('age').value;
+      const location = document.getElementById('location').value;
+      const gender = document.getElementById('gender').value;
+      
+      // Clear previous errors
+      document.getElementById('errorMsg').textContent = '';
+      
+      try {
+        // Validate required fields
+        if (!email || !password) {
+          throw new Error('Email and password are required');
+        }
+        
+        // Create user in Firebase Auth
+        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+        const userId = userCredential.user.uid;
+        
+        // Create user document in Firestore
+        await db.collection("users").doc(userId).set({
+          email: email,
+          role: "user", // Default role
+          fullName: fullName || null,
+          age: age ? parseInt(age) : null,
+          location: location || null,
+          gender: gender || null,
+          joiningDate: firebase.firestore.FieldValue.serverTimestamp(),
+          lastActive: firebase.firestore.FieldValue.serverTimestamp(),
+          status: "active"
+        });
+        
+        // Redirect to dashboard after successful registration
+        window.location.href = "/books.html";
+        
+      } catch (error) {
+        console.error("Registration error:", error);
+        document.getElementById('errorMsg').textContent = error.message;
+      }
+    });
+  </script>
+</body>
+</html>
