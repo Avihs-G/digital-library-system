@@ -89,6 +89,25 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #a0aec0;
         }
+        /* Hide role-specific elements by default */
+        .admin-only, .user-only {
+            display: none;
+        }
+        
+        /* Show elements based on body class */
+        .body-user .user-only {
+            display: block;
+        }
+        
+        .body-admin .admin-only {
+            display: block;
+        }
+        
+        /* Active tab styling */
+        .nav-link.active {
+            border-bottom: 2px solid #3b82f6;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -221,14 +240,6 @@
                 <!-- Search results will be dynamically inserted here -->
             </div>
         </section>
-
-        <!-- My Bookmarks Section -->
-        <section id="my-bookmarks" class="section-content bg-white shadow-md rounded-lg p-6 mb-8 hidden">
-            <h2 class="text-xl font-semibold mb-4">My Bookmarks</h2>
-            <div id="bookmark-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                <!-- Bookmarked books will be dynamically inserted here -->
-            </div>
-        </section>
         <!-- Book Suggestions Section -->
         <section id="book-suggestions" class="section-content bg-white shadow-md rounded-lg p-6 mb-8 hidden">
             <h2 class="text-xl font-semibold mb-4">Suggest a Book</h2>
@@ -248,7 +259,7 @@
         </section>
 
         <!-- Admin Book Management Section -->
-        <section id="admin-book-management" class="section-content bg-white shadow-md rounded-lg p-6 mb-8 hidden">
+        <section id="admin-book-management" class="section-content bg-white shadow-md rounded-lg p-6 mb-8 hidden admin-only">
             <h2 class="text-xl font-semibold mb-4">Admin Book Management</h2>
             <button id="add-book" class="bg-blue-500 text-white px-4 py-2 rounded mb-6">Add Book</button>
             <!-- Replace your current Add Book form with this -->
@@ -376,7 +387,7 @@
             </div>
         </section>
         <!-- System Statistics Section -->
-        <section id="system-statistics" class="section-content bg-white shadow-md rounded-lg p-6 mb-8 hidden">
+        <section id="system-statistics" class="section-content bg-white shadow-md rounded-lg p-6 mb-8 hidden admin-only">
             <h2 class="text-xl font-semibold mb-4">System Statistics</h2>
             <div id="user-reports" class="mb-4">
                 <!-- User reports will be dynamically inserted here -->
@@ -387,7 +398,7 @@
         </section>
     
         <!-- Review Management Section -->
-        <section id="review-management" class="section-content bg-white shadow-md rounded-lg p-6 mb-8 hidden">
+        <section id="review-management" class="section-content bg-white shadow-md rounded-lg p-6 mb-8 hidden admin-only">
             <h2 class="text-xl font-semibold mb-4">Review Management</h2>
             <div id="review-list">
                 <!-- Reviews will be dynamically inserted here -->
