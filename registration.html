@@ -110,7 +110,7 @@
         auth.onAuthStateChanged((user) => {
             if (user) {
                 // User is logged in, redirect to profile
-                window.location.href = "/profile.html";
+                window.location.href = "https://avihs-g.github.io/digital-library-system/index.html";
             } else {
                 // User is not logged in, show registration form
                 document.getElementById('registerForm').style.display = 'block';
@@ -153,7 +153,7 @@
                 });
                 
                 // Redirect to dashboard after successful registration
-                window.location.href = "/books.html";
+                window.location.href = "https://avihs-g.github.io/digital-library-system/index.html";
                 
             } catch (error) {
                 console.error("Registration error:", error);
