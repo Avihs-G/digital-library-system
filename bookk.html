@@ -89,16 +89,24 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #a0aec0;
         }
-        /* Role-based visibility */
+        /* Role-based Visibility */
         .admin-only { display: none; }
         .user-only { display: none; }
         
-        .role-admin .admin-only {
+        body.role-admin .admin-only {
             display: block;
         }
         
-        .role-user .user-only {
+        body.role-admin .admin-only.inline {
+            display: inline-block;
+        }
+        
+        body.role-user .user-only {
             display: block;
+        }
+        
+        body.role-user .user-only.inline {
+            display: inline-block;
         }
         
         /* Active tab styling */
@@ -147,10 +155,10 @@
           <button data-section="book-suggestions" class="nav-link py-2 px-4 text-blue-600 hover:text-blue-800 border-b-2 border-transparent hover:border-blue-500">
             Book Suggestions
           </button>
-          <button data-section="admin-book-management" class="nav-link py-2 px-4 text-blue-600 hover:text-blue-800 border-b-2 border-transparent hover:border-blue-500 admin-only">
+          <button data-section="admin-book-management" class="nav-link py-2 px-4 text-blue-600 hover:text-blue-800 border-b-2 border-transparent hover:border-blue-500 admin-only inline">
             Admin Book Management
           </button>
-          <button data-section="system-statistics" class="nav-link py-2 px-4 text-blue-600 hover:text-blue-800 border-b-2 border-transparent hover:border-blue-500 admin-only">
+          <button data-section="system-statistics" class="nav-link py-2 px-4 text-blue-600 hover:text-blue-800 border-b-2 border-transparent hover:border-blue-500 admin-only inline">
             System Statistics
           </button>
         </nav>
@@ -717,42 +725,61 @@
         const allSections = document.querySelectorAll(".section-content");
         const navLinks = document.querySelectorAll(".nav-link");
     
-        // Section toggle by button click
-        navLinks.forEach(btn => {
-            btn.addEventListener("click", () => {
-                const target = btn.getAttribute("data-section");
-                allSections.forEach(sec => sec.classList.add("hidden"));
-                navLinks.forEach(link => link.classList.remove("active"));
-                
-                const showSection = document.getElementById(target);
-                if (showSection) showSection.classList.remove("hidden");
-                btn.classList.add("active");
-            });
+        // Section toggle handler
+        function handleSectionClick(e) {
+            const targetSection = e.target.dataset.section;
+            
+            // Remove all active classes
+            navLinks.forEach(link => link.classList.remove('active'));
+            allSections.forEach(sec => sec.classList.add('hidden'));
+            
+            // Add active class to clicked nav
+            e.target.classList.add('active');
+            
+            // Show target section
+            const section = document.getElementById(targetSection);
+            if (section) section.classList.remove('hidden');
+        }
+    
+        // Add click listeners
+        navLinks.forEach(link => {
+            link.addEventListener('click', handleSectionClick);
         });
     
-        // Auth state listener
-        auth.onAuthStateChanged(async (user) => {
+        // Auth state handler
+        auth.onAuthStateChanged(async user => {
             if (!user) {
                 window.location.href = 'index.html';
                 return;
             }
     
             try {
-                const doc = await db.collection("users").doc(user.uid).get();
-                const role = doc.exists ? doc.data().role : "user";
+                const userDoc = await db.collection("users").doc(user.uid).get();
                 
-                // Add role class to body
+                if (!userDoc.exists) {
+                    throw new Error("User document not found");
+                }
+    
+                const userData = userDoc.data();
+                const role = userData.role || 'user';
+    
+                // Set body class
+                document.body.className = ''; // Reset classes
                 document.body.classList.add(`role-${role}`);
-                
-                // Show default section
-                document.querySelector('[data-section="view-books"]').click();
+    
+                // Show default section based on role
+                const defaultSection = role === 'admin' ? 
+                    'admin-book-management' : 'view-books';
+                    
+                document.querySelector(`[data-section="${defaultSection}"]`).click();
     
             } catch (error) {
-                console.error("Failed to fetch user role:", error);
+                console.error("Auth error:", error);
+                alert('Error loading user data');
+                auth.signOut();
             }
         });
     });
     </script>
-
 </body>
 </html>
