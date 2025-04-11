@@ -99,38 +99,37 @@
                 const auth = firebase.auth();
                 const db = firebase.firestore();
     
-                // 1. Check authentication status on page load
+                // Auth state listener for existing users
                 auth.onAuthStateChanged(async (user) => {
                     const loading = document.getElementById('loading');
                     if (loading) loading.style.display = 'none';
     
                     if (user) {
-                        console.log('User is logged in, verifying database record...');
+                        console.log('User already logged in, verifying...');
                         try {
-                            // Check if user document exists
+                            // Verify user document exists
                             const doc = await db.collection("users").doc(user.uid).get();
                             
                             if (!doc.exists) {
-                                console.warn('User document missing, logging out...');
+                                console.log('No user document found, logging out');
                                 await auth.signOut();
-                                window.location.reload();
                                 return;
                             }
                             
-                            console.log('User verified, redirecting...');
+                            console.log('Valid user found, redirecting...');
                             window.location.href = '/digital-library-system/books.html';
                         } catch (error) {
                             console.error('Verification error:', error);
                             alert('Error verifying user account');
                         }
                     } else {
-                        console.log('No user logged in, showing registration form');
+                        console.log('No user logged in, showing form');
                         const form = document.getElementById('registerForm');
                         if (form) form.style.display = 'block';
                     }
                 });
     
-                // 2. Registration handler
+                // Registration handler
                 document.getElementById('registerBtn').addEventListener('click', async (e) => {
                     e.preventDefault();
                     const errorMsg = document.getElementById('errorMsg');
@@ -140,47 +139,45 @@
                     const password = document.getElementById('password').value.trim();
                     const fullName = document.getElementById('fullName').value.trim();
                     const age = document.getElementById('age').value;
+                    const location = document.getElementById('location').value.trim();
                     const gender = document.getElementById('gender').value;
     
                     try {
                         // Validation
                         if (!email || !password) throw new Error('Email and password are required');
                         if (password.length < 6) throw new Error('Password must be at least 6 characters');
-                        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error('Invalid email format');
     
                         // Show loading state
                         const btn = document.getElementById('registerBtn');
-                        btn.innerHTML = '<i class="fas fa-spinner loading-spinner mr-2"></i>Registering...';
                         btn.disabled = true;
+                        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Registering...';
     
                         // Create auth user
                         const userCredential = await auth.createUserWithEmailAndPassword(email, password);
                         const userId = userCredential.user.uid;
     
-                        // Create user document in Firestore
+                        // Create user document with UID as document ID
                         await db.collection("users").doc(userId).set({
-                          email: email,
-                          role: "user", // Default role
-                          fullName: fullName || null,
-                          age: age ? parseInt(age) : null,
-                          location: location || null,
-                          gender: gender || null,
-                          joiningDate: firebase.firestore.FieldValue.serverTimestamp(),
-                          lastActive: firebase.firestore.FieldValue.serverTimestamp(),
-                          status: "active"
+                            email: email,
+                            role: "user",
+                            fullName: fullName || null,
+                            age: age ? parseInt(age) : null,
+                            location: location || null,
+                            gender: gender || null,
+                            joiningDate: firebase.firestore.FieldValue.serverTimestamp(),
+                            lastActive: firebase.firestore.FieldValue.serverTimestamp(),
+                            status: "active"
                         });
     
-                        console.log('Registration successful, forcing auth refresh...');
-                        await userCredential.user.getIdToken(true); // Refresh token
-                        
+                        console.log('Registration successful - auth listener will handle redirect');
+    
                     } catch (error) {
-                        console.error('Registration failed:', error);
-                        errorMsg.textContent = this.formatFirebaseError(error);
+                        console.error("Registration error:", error);
+                        errorMsg.textContent = error.message;
                         
                         // Cleanup failed registration
                         if (auth.currentUser) {
                             await auth.currentUser.delete();
-                            console.log('Rolled back auth user');
                         }
                         
                         const btn = document.getElementById('registerBtn');
@@ -195,16 +192,6 @@
                     '<p class="text-red-500">Application failed to initialize. Please refresh.</p>';
             }
         });
-    
-        function formatFirebaseError(error) {
-            const messages = {
-                'auth/email-already-in-use': 'Email already registered',
-                'auth/invalid-email': 'Invalid email format',
-                'auth/weak-password': 'Password must be at least 6 characters',
-                'permission-denied': 'Database error: Contact support'
-            };
-            return messages[error.code] || error.message;
-        }
     </script>
 </body>
 </html>
