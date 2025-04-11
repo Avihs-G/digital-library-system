@@ -195,73 +195,120 @@
         </div>
     </div>
     <script>
-    // Initialize Firebase
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-
-    // Immediate auth check on page load
-    auth.onAuthStateChanged((user) => {
-        if (user) {
-            // Redirect logged-in users to books page
-            window.location.href = '/digital-library-system/books.html';
-        }
-    });
-
-    // Registration handler
-    document.getElementById('registerBtn').addEventListener('click', async (e) => {
-        e.preventDefault();
-        const errorMsg = document.getElementById('errorMsg');
-        errorMsg.textContent = '';
-        
-        // Get form values
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        const fullName = document.getElementById('fullName').value;
-        const age = document.getElementById('age').value;
-        const location = document.getElementById('location').value;
-        const gender = document.getElementById('gender').value;
-
-        try {
-            // Validation
-            if (!email || !password) {
-                throw new Error('Email and password are required');
-            }
-            if (password.length < 6) {
-                throw new Error('Password must be at least 6 characters');
-            }
-
-            // Show loading state
-            const registerBtn = document.getElementById('registerBtn');
-            registerBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Registering...';
-            registerBtn.disabled = true;
-
-            // Create user
-            const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+        // Initialize Firebase
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+    
+        // Auth state listener for redirects and UI updates
+        auth.onAuthStateChanged((user) => {
+            const loginButton = document.getElementById('login-button');
+            const logoutButton = document.getElementById('logout');
             
-            // Save additional user data
-            await db.collection("users").doc(userCredential.user.uid).set({
-                email: email,
-                fullName: fullName || null,
-                age: age ? parseInt(age) : null,
-                location: location || null,
-                gender: gender || null,
-                created: firebase.firestore.FieldValue.serverTimestamp(),
-                status: "active"
+            if (user) {
+                // Redirect logged-in users immediately
+                window.location.href = '/digital-library-system/books.html';
+            } else {
+                // Update UI for logged-out state
+                loginButton.classList.remove('hidden');
+                logoutButton.classList.add('hidden');
+            }
+        });
+    
+        // Registration Handler
+        document.getElementById('registerBtn').addEventListener('click', async (e) => {
+            e.preventDefault();
+            const errorMsg = document.getElementById('errorMsg');
+            errorMsg.textContent = '';
+            
+            // Get form values
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const fullName = document.getElementById('fullName').value;
+            const age = document.getElementById('age').value;
+            const location = document.getElementById('location').value;
+            const gender = document.getElementById('gender').value;
+    
+            try {
+                // Basic validation
+                if (!email || !password) throw new Error('Email and password are required');
+                if (password.length < 6) throw new Error('Password must be at least 6 characters');
+    
+                // Disable button during processing
+                const btn = document.getElementById('registerBtn');
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Registering...';
+    
+                // Create user account
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                
+                // Save user data to Firestore
+                await db.collection("users").doc(userCredential.user.uid).set({
+                    email: email,
+                    fullName: fullName || null,
+                    age: age ? parseInt(age) : null,
+                    location: location || null,
+                    gender: gender || null,
+                    created: firebase.firestore.FieldValue.serverTimestamp(),
+                    status: "active"
+                });
+    
+                // Redirect after successful registration
+                window.location.href = "/digital-library-system/books.html";
+    
+            } catch (error) {
+                console.error("Registration error:", error);
+                document.getElementById('errorMsg').textContent = error.message;
+                
+                // Reset button state
+                const btn = document.getElementById('registerBtn');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-user-plus mr-2"></i>Register';
+            }
+        });
+    
+        // Login Modal Handling
+        const loginModal = document.getElementById('login-modal');
+        const loginForm = document.getElementById('login');
+    
+        // Open login modal
+        document.getElementById('login-button').addEventListener('click', () => {
+            loginModal.classList.remove('hidden');
+        });
+    
+        // Close login modal
+        document.getElementById('close-login-modal').addEventListener('click', () => {
+            loginModal.classList.add('hidden');
+        });
+    
+        // Login Form Submission
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            const errorMsg = loginForm.querySelector('.error');
+    
+            try {
+                const btn = loginForm.querySelector('button[type="submit"]');
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Logging in...';
+    
+                await auth.signInWithEmailAndPassword(email, password);
+                // Redirect handled by auth state listener
+    
+            } catch (error) {
+                console.error("Login error:", error);
+                errorMsg.textContent = error.message;
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i>Login';
+            }
+        });
+    
+        // Logout Handler
+        document.getElementById('logout').addEventListener('click', () => {
+            auth.signOut().catch(error => {
+                console.error('Logout error:', error);
             });
-
-            // Redirect after successful registration
-            window.location.href = "/digital-library-system/books.html";
-
-        } catch (error) {
-            console.error("Registration error:", error);
-            errorMsg.textContent = error.message;
-            
-            // Reset button state
-            const registerBtn = document.getElementById('registerBtn');
-            registerBtn.innerHTML = '<i class="fas fa-user-plus mr-2"></i>Register';
-            registerBtn.disabled = false;
-        }
-    });
-</script>
+        });
+    </script>
 </body>
 </html>
