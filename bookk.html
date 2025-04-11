@@ -108,10 +108,27 @@
             display: inline-block !important;
         }
         
-        /* Active tab styling */
+        .nav-link {
+            /* Your existing styles */
+            background-color: transparent !important; /* Force remove background */
+        }
+        
         .nav-link.active {
-            border-bottom: 2px solid #3b82f6;
-            font-weight: 600;
+            color: #3b82f6 !important; /* Force blue text color */
+            border-bottom-color: #3b82f6 !important;
+            background-color: transparent !important; /* Remove white overlay */
+            position: relative;
+        }
+        
+        /* Optional: Add underline effect */
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #3b82f6;
         }
         
     </style>
