@@ -95,30 +95,29 @@
         }
     
         /* Modify existing admin visibility rules */
-        .admin-only {
-            display: none;
-        }
-        
-        body.role-admin .admin-only {
-            display: block;
-        }
+        .admin-only { display: none; }
+        body.role-admin .admin-only { display: inline-block; }
     
         /* For inline elements like buttons */
         body.role-admin .admin-only.inline {
             display: inline-block !important;
         }
 
+        /* Navigation Links */
         .nav-link {
-            color: #3b82f6;
+            @apply py-2 px-4 border-b-2 border-transparent;
+            color: #3b82f6; /* Override Tailwind's text-blue-600 */
+            transition: all 0.2s ease;
         }
-        .nav-link.hover {
-            background-color: #3b82f6
-            color: white;
+        
+        .nav-link:hover {
+            @apply border-blue-300; /* Tailwind's blue-300 */
+            color: #2563eb; /* Darker blue for hover */
         }
-        /* Active tab styling */
+        
         .nav-link.active {
-            border-bottom: 2px solid #3b82f6;
-            font-weight: 600;
+            @apply border-blue-600 font-semibold;
+            background-color: transparent !important; /* Remove white background */
         }
         
     </style>
@@ -151,23 +150,23 @@
     </header>
 
     <main class="container mx-auto my-8">
-        <nav class="flex justify-center space-x-4 mb-8 border-b border-gray-300">
-          <button data-section="view-books" class="nav-link py-2 px-4 text-blue-600 hover:text-blue-800 border-b-2 border-transparent hover:border-blue-500">
+    <nav class="flex justify-center space-x-4 mb-8 border-b border-gray-300">
+        <button data-section="view-books" class="nav-link">
             View Books
-          </button>
-          <button data-section="search-books" class="nav-link py-2 px-4 text-blue-600 hover:text-blue-800 border-b-2 border-transparent hover:border-blue-500">
+        </button>
+        <button data-section="search-books" class="nav-link">
             Search Books
-          </button>
-          <button data-section="book-suggestions" class="nav-link py-2 px-4 text-blue-600 hover:text-blue-800 border-b-2 border-transparent hover:border-blue-500">
+        </button>
+        <button data-section="book-suggestions" class="nav-link">
             Book Suggestions
-          </button>
-          <button data-section="admin-book-management" class="nav-link py-2 px-4 text-blue-600 hover:text-blue-800 border-b-2 border-transparent hover:border-blue-500 admin-only inline">
-            Admin Book Management
-          </button>
-          <button data-section="system-statistics" class="nav-link py-2 px-4 text-blue-600 hover:text-blue-800 border-b-2 border-transparent hover:border-blue-500 admin-only inline">
-            System Statistics
-          </button>
-        </nav>
+        </button>
+        <button data-section="admin-book-management" class="nav-link admin-only">
+            Admin Management
+        </button>
+        <button data-section="system-statistics" class="nav-link admin-only">
+            System Stats
+        </button>
+    </nav>
 
         <!-- View Books Section -->
         <section id="view-books" class="section-content bg-white shadow-md rounded-lg p-6 mb-8">
