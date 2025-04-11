@@ -8,48 +8,69 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 500px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-    .form-group {
-      margin-bottom: 15px;
-    }
-    label {
-      display: block;
-      margin-bottom: 5px;
-      font-weight: bold;
-    }
-    input, select {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      box-sizing: border-box;
-    }
-    button {
-      background-color: #4285f4;
-      color: white;
-      border: none;
-      padding: 12px 20px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 16px;
-      width: 100%;
-    }
-    button:hover {
-      background-color: #3367d6;
-    }
-    .error {
-      color: red;
-      margin-top: 10px;
-    }
-  </style>
+ 
+    <!-- Custom Styles -->
+    <style>
+        /* Add this at the very top of your CSS */
+        :root {
+            zoom: 0.85; /* For Chrome/Edge */
+            transform: scale(0.85); /* For Firefox */
+            transform-origin: top left;
+        }
+        
+        body {
+            width: 117.65%; /* Counteract scaling (100/0.85) */
+            min-height: 117.65vh;
+        }
+        .avatar-initials {
+            font-family: 'Inter', sans-serif;
+        }
+        .section-card {
+            transition: all 0.3s ease;
+        }
+        .section-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .nav-tab {
+            transition: all 0.2s ease;
+        }
+        .nav-tab.active {
+            border-bottom: 3px solid #3b82f6;
+            color: #3b82f6;
+        }
+        .admin-only {
+            display: none;
+        }
+        
+        .role-admin .admin-only {
+            display: block;
+        }
+    </style>
 </head>
-<body>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-blue-600 text-white py-6">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <h1 class="text-3xl font-bold tracking-tight">Digital Library</h1>
+                    <p class="text-blue-100 mt-1">Your gateway to knowledge</p>
+                </div>
+                <nav class="flex items-center space-x-4 nav-buttons">
+                    <a href="index.html" class="px-4 py-2 rounded-lg bg-blue-500 bg-opacity-20 hover:bg-opacity-30">
+                        <i class="fas fa-home mr-2"></i>Home
+                    </a>
+                    <a href="books.html" class="px-4 py-2 rounded-lg bg-blue-500 bg-opacity-30 hover:bg-opacity-40">
+                        <i class="fas fa-book mr-2"></i>Books Dashboard
+                    </a>
+                    <button id="logout" class="px-4 py-2 rounded-lg bg-white text-blue-600 hover:bg-gray-100">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                    </button>
+                </nav>
+            </div>
+        </div>
+    </header>
   <h1>Create Your Account</h1>
   
   <form id="registerForm">
@@ -91,7 +112,22 @@
     <button type="button" id="registerBtn">Register</button>
     <div id="errorMsg" class="error"></div>
   </form>
-
+  <!-- Footer Section -->
+  <footer class="bg-blue-600 py-6 text-white">
+      <div class="container mx-auto px-4">
+          <div class="flex flex-col md:flex-row justify-between items-center">
+              <div class="mb-4 md:mb-0">
+                  <p>&copy; 2023 Digital Library System. All rights reserved.</p>
+              </div>
+              <div class="flex space-x-4">
+                  <a href="#" class="hover:text-blue-200"><i class="fab fa-facebook-f"></i></a>
+                  <a href="#" class="hover:text-blue-200"><i class="fab fa-twitter"></i></a>
+                  <a href="#" class="hover:text-blue-200"><i class="fab fa-instagram"></i></a>
+                  <a href="#" class="hover:text-blue-200"><i class="fab fa-linkedin-in"></i></a>
+              </div>
+          </div>
+      </div>
+  </footer>
   <script>
       const firebaseConfig = {
           apiKey: "AIzaSyBL0n0BJsba-CEvYmyOVJ3aTHSntWXNx84",
