@@ -155,10 +155,10 @@
           <button data-section="book-suggestions" class="nav-link py-2 px-4 text-blue-600 hover:text-blue-800 border-b-2 border-transparent hover:border-blue-500">
             Book Suggestions
           </button>
-          <button data-section="admin-book-management" class="nav-link py-2 px-4 text-blue-600 hover:text-blue-800 border-b-2 border-transparent hover:border-blue-500 admin-only inline">
+          <button data-section="admin-book-management" class="nav-link py-2 px-4 text-blue-600 hover:text-blue-800 border-b-2 border-transparent hover:border-blue-500 admin-only hidden">
             Admin Book Management
           </button>
-          <button data-section="system-statistics" class="nav-link py-2 px-4 text-blue-600 hover:text-blue-800 border-b-2 border-transparent hover:border-blue-500 admin-only inline">
+          <button data-section="system-statistics" class="nav-link py-2 px-4 text-blue-600 hover:text-blue-800 border-b-2 border-transparent hover:border-blue-500 admin-only hidden">
             System Statistics
           </button>
         </nav>
@@ -720,59 +720,60 @@
     </footer>
 
     <!-- Inline JavaScript for Initial Page Setup -->
-    <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const navLinks = document.querySelectorAll(".nav-link");
-      const allSections = document.querySelectorAll(".section-content");
-      const adminOnlyButtons = document.querySelectorAll(".admin-only");
+      <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const navLinks = document.querySelectorAll(".nav-link");
+        const allSections = document.querySelectorAll(".section-content");
+        const adminOnlyElements = document.querySelectorAll(".admin-only");
     
-      // Handle navigation switching
-      function handleSectionClick(e) {
-        const targetSection = e.target.dataset.section;
+        // Handle navigation switching
+        function handleSectionClick(e) {
+          const targetSection = e.target.dataset.section;
     
-        // Hide all sections
-        allSections.forEach(sec => sec.classList.add("hidden"));
+          // Hide all sections
+          allSections.forEach(sec => sec.classList.add("hidden"));
     
-        // Show the clicked section
-        const sectionToShow = document.getElementById(targetSection);
-        if (sectionToShow) sectionToShow.classList.remove("hidden");
+          // Show the clicked section
+          const sectionToShow = document.getElementById(targetSection);
+          if (sectionToShow) sectionToShow.classList.remove("hidden");
     
-        // Update nav button styles
-        navLinks.forEach(btn => btn.classList.remove("border-blue-500"));
-        e.target.classList.add("border-blue-500");
-      }
-    
-      // Attach event listeners
-      navLinks.forEach(link => link.addEventListener("click", handleSectionClick));
-    
-      // Firebase Auth State
-      auth.onAuthStateChanged(async user => {
-        if (!user) {
-          window.location.href = "index.html";
-          return;
+          // Update nav button styles
+          navLinks.forEach(btn => btn.classList.remove("border-blue-500"));
+          e.target.classList.add("border-blue-500");
         }
     
-        try {
-          const userDoc = await db.collection("users").doc(user.uid).get();
-          const userData = userDoc.data();
-          const role = userData.role || "user";
+        // Attach event listeners
+        navLinks.forEach(link => link.addEventListener("click", handleSectionClick));
     
-          if (role === "admin") {
-            // Show admin-only buttons
-            adminOnlyButtons.forEach(btn => btn.classList.remove("hidden"));
+        // Firebase Auth State
+        auth.onAuthStateChanged(async user => {
+          if (!user) {
+            window.location.href = "index.html";
+            return;
           }
     
-          // Click default section
-          const defaultBtn = document.querySelector('[data-section="view-books"]');
-          if (defaultBtn) defaultBtn.click();
+          try {
+            const userDoc = await db.collection("users").doc(user.uid).get();
+            const userData = userDoc.data();
+            const role = userData.role || "user";
     
-        } catch (err) {
-          console.error("Error loading user:", err);
-          auth.signOut();
-        }
+            if (role === "admin") {
+              // Show all admin-only buttons and sections
+              adminOnlyElements.forEach(el => el.classList.remove("hidden"));
+            }
+    
+            // Click default section
+            const defaultBtn = document.querySelector('[data-section="view-books"]');
+            if (defaultBtn) defaultBtn.click();
+    
+          } catch (err) {
+            console.error("Error loading user:", err);
+            auth.signOut();
+          }
+        });
       });
-    });
     </script>
+
 
 </body>
 </html>
