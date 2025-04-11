@@ -18,6 +18,17 @@
     <!-- Your Custom Scripts -->
     <script src="js/auth.js" defer></script>
     <style>
+        /* Add this at the very top of your CSS */
+        :root {
+            zoom: 0.85; /* For Chrome/Edge */
+            transform: scale(0.85); /* For Firefox */
+            transform-origin: top left;
+        }
+        
+        body {
+            width: 117.65%; /* Counteract scaling (100/0.85) */
+            min-height: 117.65vh;
+        }
          /* Index-specific styles */
          .hero-section {
             background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
