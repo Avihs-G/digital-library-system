@@ -718,69 +718,53 @@
 
     <!-- Inline JavaScript for Initial Page Setup -->
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Navigation Links Selection
-            const navLinks = document.querySelectorAll('.nav-link');
-            const sections = document.querySelectorAll('.section-content');
-
-            auth.onAuthStateChanged(async (user) => {
-              if (user) {
-                console.log("User authenticated:", user.email);
-            
-                try {
-                  const userDoc = await db.collection("users").doc(user.uid).get();
-            
-                  if (userDoc.exists) {
-                    const userData = userDoc.data();
-                    const isAdmin = userData.role === "admin";
-                    console.log(`User authenticated: ${user.email}, Admin: ${isAdmin}`);
-            
-                    // Show or hide sections based on role
-                    document.querySelectorAll(".admin-only").forEach(el => {
-                      el.classList.toggle("hidden", !isAdmin);
-                    });
-            
-                    document.querySelectorAll(".user-only").forEach(el => {
-                      el.classList.toggle("hidden", isAdmin);
-                    });
-            
-                  } else {
-                    console.warn("No user document found for:", user.uid);
-                    // If no user document, hide admin-only sections just to be safe
-                    document.querySelectorAll(".admin-only").forEach(el => el.classList.add("hidden"));
-                    document.querySelectorAll(".user-only").forEach(el => el.classList.remove("hidden"));
-                  }
-            
-                } catch (error) {
-                  console.error("Error fetching user role:", error);
-                }
-            
-              } else {
-                console.warn("No user is signed in. Redirecting to login...");
-                window.location.href = "login.html"; // Adjust this if needed
-              }
-            });
-
-
+      document.addEventListener('DOMContentLoaded', () => {
+        const navLinks = document.querySelectorAll('.nav-link');
+        const sections = document.querySelectorAll('.tab-section');
     
-            // Navigation logic
-            navLinks.forEach(link => {
-                link.addEventListener('click', () => {
-                    const targetSection = link.getAttribute('data-section');
-                    sections.forEach(section => {
-                        if (section.id === targetSection) {
-                            section.classList.remove('hidden');
-                        } else {
-                            section.classList.add('hidden');
-                        }
-                    });
-                });
-            });
+        function showSection(id) {
+          sections.forEach(section => {
+            section.classList.toggle('hidden', section.id !== id);
+          });
     
-            if (sections.length > 0) {
-                sections[0].classList.remove('hidden');
-            }
+          navLinks.forEach(link => {
+            link.classList.toggle('border-blue-500', link.dataset.section === id);
+            link.classList.toggle('text-blue-800', link.dataset.section === id);
+          });
+        }
+    
+        // Set default section (e.g., view-books)
+        showSection('view-books');
+    
+        // Add click listeners to nav buttons
+        navLinks.forEach(link => {
+          link.addEventListener('click', () => {
+            showSection(link.dataset.section);
+          });
         });
+    
+        // Auth role-based visibility setup
+        auth.onAuthStateChanged(user => {
+          if (user) {
+            const userEmail = user.email;
+            db.collection('users').doc(user.uid).get().then(doc => {
+              const userData = doc.data();
+              const isAdmin = userData?.role === 'admin';
+    
+              document.querySelectorAll('.admin-only').forEach(el => {
+                el.classList.toggle('hidden', !isAdmin);
+              });
+    
+              document.querySelectorAll('.user-only').forEach(el => {
+                el.classList.toggle('hidden', isAdmin);
+              });
+    
+            }).catch(error => {
+              console.error("Error fetching user role:", error);
+            });
+          }
+        });
+      });
     </script>
 </body>
 </html>
