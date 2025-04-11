@@ -73,7 +73,6 @@
             <div id="errorMsg" class="text-red-500 text-sm text-center"></div>
         </form>
     </div>
-
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const firebaseConfig = {
@@ -84,21 +83,20 @@
                 messagingSenderId: "316017046740",
                 appId: "1:316017046740:web:ecdcfd5b8980901f4cf741"
             };
-
+    
             // Initialize Firebase
             firebase.initializeApp(firebaseConfig);
             const auth = firebase.auth();
             const db = firebase.firestore();
-
+    
             // Auth state listener
             auth.onAuthStateChanged(user => {
                 if (user) {
+                    console.log('Authenticated user detected, redirecting...');
                     window.location.href = '/digital-library-system/books.html';
-                } else {
-                    document.getElementById('registerForm').style.display = 'block';
                 }
             });
-
+    
             // Registration handler
             document.getElementById('registerBtn').addEventListener('click', async (e) => {
                 e.preventDefault();
@@ -110,35 +108,36 @@
                 const fullName = document.getElementById('fullName').value.trim();
                 const age = document.getElementById('age').value;
                 const gender = document.getElementById('gender').value;
-
+    
                 try {
                     // Validation
                     if (!email || !password) throw new Error('Email and password are required');
                     if (password.length < 6) throw new Error('Password must be at least 6 characters');
                     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error('Invalid email format');
-
+    
                     // Show loading state
                     const btn = document.getElementById('registerBtn');
                     btn.innerHTML = '<i class="fas fa-spinner loading-spinner mr-2"></i>Registering...';
                     btn.disabled = true;
-
-                    // Create user
+    
+                    // 1. Create user in Authentication
                     const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-                    
-                    // Save user data
-                    await db.collection("users").doc(userCredential.user.uid).set({
+                    const userId = userCredential.user.uid;
+    
+                    // 2. Create user document in Firestore
+                    await db.collection("users").doc(userId).set({
+                        uid: userId,
                         email: email,
-                        fullName: fullName || null,
+                        fullName: fullName || '',
                         age: age ? parseInt(age) : null,
-                        gender: gender || null,
+                        gender: gender || 'not-specified',
                         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                         lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
                         status: 'active'
                     });
-
-                    // Redirect after registration
-                    window.location.href = '/digital-library-system/books.html';
-
+    
+                    console.log('User document created successfully');
+    
                 } catch (error) {
                     console.error('Registration error:', error);
                     errorMsg.textContent = error.message;
