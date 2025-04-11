@@ -11,9 +11,12 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script    <!-- Keep existing head content -->
     <style>
-        #registerForm { display: none; }
+        /* Add this CSS */
+        #registerForm {
+            display: none; /* Hidden by default */
+        }
         .loading-spinner {
             animation: spin 1s linear infinite;
         }
@@ -26,6 +29,12 @@
 <body class="bg-gray-100 min-h-screen flex items-center justify-center">
     <div class="bg-white rounded-xl shadow-lg p-8 w-full max-w-md">
         <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">Create Account</h1>
+        
+        <!-- Add a loading indicator -->
+        <div id="loading" class="text-center text-gray-500">
+            <i class="fas fa-spinner fa-spin fa-2x"></i>
+            <p class="mt-2">Checking authentication status...</p>
+        </div>
         
         <form id="registerForm" class="space-y-4">
             <div>
@@ -74,26 +83,30 @@
         </form>
     </div>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const firebaseConfig = {
-                apiKey: "AIzaSyBL0n0BJsba-CEvYmyOVJ3aTHSntWXNx84",
-                authDomain: "dls-digital-library-system.firebaseapp.com",
-                projectId: "dls-digital-library-system",
-                storageBucket: "dls-digital-library-system.appspot.com",
-                messagingSenderId: "316017046740",
-                appId: "1:316017046740:web:ecdcfd5b8980901f4cf741"
-            };
+    document.addEventListener('DOMContentLoaded', () => {
+        const firebaseConfig = {
+            apiKey: "AIzaSyBL0n0BJsba-CEvYmyOVJ3aTHSntWXNx84",
+            authDomain: "dls-digital-library-system.firebaseapp.com",
+            projectId: "dls-digital-library-system",
+            storageBucket: "dls-digital-library-system.appspot.com",
+            messagingSenderId: "316017046740",
+            appId: "1:316017046740:web:ecdcfd5b8980901f4cf741"
+        };
     
-            // Initialize Firebase
+        try {
             firebase.initializeApp(firebaseConfig);
             const auth = firebase.auth();
             const db = firebase.firestore();
     
-            // Auth state listener
             auth.onAuthStateChanged(user => {
+                document.getElementById('loading').style.display = 'none';
+                
                 if (user) {
-                    console.log('Authenticated user detected, redirecting...');
+                    console.log('Redirecting authenticated user');
                     window.location.href = '/digital-library-system/books.html';
+                } else {
+                    console.log('Showing registration form');
+                    document.getElementById('registerForm').style.display = 'block';
                 }
             });
     
