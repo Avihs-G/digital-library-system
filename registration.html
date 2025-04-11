@@ -195,125 +195,73 @@
         </div>
     </div>
     <script>
-        document.getElementById('registerBtn').addEventListener('click', async function() {
-            const loginButton = document.getElementById('login-button');
-            const profileLink = document.getElementById('profile-link');
-            const booksLink = document.getElementById('books-link');
-            const logoutButton = document.getElementById('logout');
-            const loginModal = document.getElementById('login-modal');
-            const forgotPasswordModal = document.getElementById('forgot-password-modal');
-            const closeLoginModal = document.getElementById('close-login-modal');
-            const closeRegisterModal = document.getElementById('close-register-modal');
-            const closeForgotPasswordModal = document.getElementById('close-forgot-password-modal');
-            const forgotPasswordLink = document.getElementById('forgot-password-link');
-            const forgotPasswordForm = document.getElementById('forgot-password-form');
-            const switchToLogin = document.getElementById('switch-to-login');
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const fullName = document.getElementById('fullName').value;
-            const age = document.getElementById('age').value;
-            const location = document.getElementById('location').value;
-            const gender = document.getElementById('gender').value;
+    // Initialize Firebase
+    const auth = firebase.auth();
+    const db = firebase.firestore();
 
-            document.getElementById('errorMsg').textContent = '';
+    // Immediate auth check on page load
+    auth.onAuthStateChanged((user) => {
+        if (user) {
+            // Redirect logged-in users to books page
+            window.location.href = '/digital-library-system/books.html';
+        }
+    });
 
-            try {
-                if (!email || !password) {
-                    throw new Error('Email and password are required');
-                }
+    // Registration handler
+    document.getElementById('registerBtn').addEventListener('click', async (e) => {
+        e.preventDefault();
+        const errorMsg = document.getElementById('errorMsg');
+        errorMsg.textContent = '';
+        
+        // Get form values
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const fullName = document.getElementById('fullName').value;
+        const age = document.getElementById('age').value;
+        const location = document.getElementById('location').value;
+        const gender = document.getElementById('gender').value;
 
-                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-                const userId = userCredential.user.uid;
-
-                await db.collection("users").doc(userId).set({
-                    email: email,
-                    role: "user",
-                    fullName: fullName || null,
-                    age: age ? parseInt(age) : null,
-                    location: location || null,
-                    gender: gender || null,
-                    joiningDate: firebase.firestore.FieldValue.serverTimestamp(),
-                    lastActive: firebase.firestore.FieldValue.serverTimestamp(),
-                    status: "active"
-                });
-
-                window.location.href = "/digital-library-system/books.html";
-            } catch (error) {
-                console.error("Registration error:", error);
-                document.getElementById('errorMsg').textContent = error.message;
+        try {
+            // Validation
+            if (!email || !password) {
+                throw new Error('Email and password are required');
             }
+            if (password.length < 6) {
+                throw new Error('Password must be at least 6 characters');
+            }
+
+            // Show loading state
+            const registerBtn = document.getElementById('registerBtn');
+            registerBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Registering...';
+            registerBtn.disabled = true;
+
+            // Create user
+            const userCredential = await auth.createUserWithEmailAndPassword(email, password);
             
-            // Show login modal
-            loginButton.addEventListener('click', () => {
-                loginModal.classList.remove('hidden');
+            // Save additional user data
+            await db.collection("users").doc(userCredential.user.uid).set({
+                email: email,
+                fullName: fullName || null,
+                age: age ? parseInt(age) : null,
+                location: location || null,
+                gender: gender || null,
+                created: firebase.firestore.FieldValue.serverTimestamp(),
+                status: "active"
             });
 
-            // Switch to login from register
-            switchToLogin.addEventListener('click', (e) => {
-                e.preventDefault();
-                registerModal.classList.add('hidden');
-                loginModal.classList.remove('hidden');
-            });
+            // Redirect after successful registration
+            window.location.href = "/digital-library-system/books.html";
 
-            // Show forgot password modal
-            forgotPasswordLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                loginModal.classList.add('hidden');
-                forgotPasswordModal.classList.remove('hidden');
-            });
-
-            // Close login modal
-            closeLoginModal.addEventListener('click', () => {
-                loginModal.classList.add('hidden');
-            });
-
-            // Close forgot password modal
-            closeForgotPasswordModal.addEventListener('click', () => {
-                forgotPasswordModal.classList.add('hidden');
-            });
-
-            // Handle forgot password form submission
-            forgotPasswordForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const email = document.getElementById('forgot-password-email').value;
-                auth.sendPasswordResetEmail(email)
-                    .then(() => {
-                        alert('Password reset email sent!');
-                        forgotPasswordModal.classList.add('hidden');
-                    })
-                    .catch((error) => {
-                        console.error('Error sending password reset email:', error.message);
-                        alert('Error: ' + error.message);
-                    });
-            });
-
-            // Check if user is logged in
-            auth.onAuthStateChanged((user) => {
-                if (user) {
-                    // User is logged in
-                    profileLink.classList.remove('hidden');
-                    booksLink.classList.remove('hidden');
-                    logoutButton.classList.remove('hidden');
-                    loginButton.classList.add('hidden');
-                    registerButton.classList.add('hidden');
-                } else {
-                    // User is not logged in
-                    profileLink.classList.add('hidden');
-                    booksLink.classList.add('hidden');
-                    logoutButton.classList.add('hidden');
-                    loginButton.classList.remove('hidden');
-                    registerButton.classList.remove('hidden');
-                }
-            });
-
-            logoutButton.addEventListener('click', () => {
-                auth.signOut().then(() => {
-                    window.location.href = 'index.html';
-                }).catch((error) => {
-                    console.error('Error logging out:', error);
-                });
-            });
-        });
-    </script>
+        } catch (error) {
+            console.error("Registration error:", error);
+            errorMsg.textContent = error.message;
+            
+            // Reset button state
+            const registerBtn = document.getElementById('registerBtn');
+            registerBtn.innerHTML = '<i class="fas fa-user-plus mr-2"></i>Register';
+            registerBtn.disabled = false;
+        }
+    });
+</script>
 </body>
 </html>
