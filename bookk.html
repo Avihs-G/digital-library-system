@@ -149,7 +149,7 @@
         </nav>
 
         <!-- View Books Section -->
-        <div id="view-books" class="tab-section hidden">
+        <div id="view-books" class="tab-section">
         <section id="view-books" class="section-content bg-white shadow-md rounded-lg p-6 mb-8">
             <div class="flex">
                 <!-- Sidebar for Sorting and Filtering -->
@@ -214,7 +214,7 @@
         </div>
 
         <!-- Search Books Section -->
-        <div id="search-books" class="tab-section hidden">
+        <div id="search-books" class="tab-section">
         <section id="search-books" class="section-content bg-white shadow-md rounded-lg p-6 mb-8 hidden">
             <h2 class="text-xl font-semibold mb-4">Search Books</h2>
             <div class="flex gap-4 mb-6">
@@ -717,70 +717,56 @@
     </footer>
 
     <!-- Inline JavaScript for Initial Page Setup -->
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    auth.onAuthStateChanged(async (user) => {
-      if (user) {
-        console.log("User authenticated:", user.email);
-        try {
-          const doc = await db.collection("users").doc(user.uid).get();
-          const data = doc.data();
-          const isAdmin = data?.role === "admin";
-          console.log("Admin:", isAdmin);
-
-          const allSections = document.querySelectorAll(".section");
-          const navButtons = document.querySelectorAll(".nav-link");
-
-          if (isAdmin) {
-            // Show all nav buttons and sections
-            navButtons.forEach(btn => btn.classList.remove("hidden"));
-            allSections.forEach(sec => sec.classList.remove("hidden"));
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        auth.onAuthStateChanged(async (user) => {
+          if (user) {
+            console.log("User authenticated:", user.email);
+    
+            try {
+              const doc = await db.collection("users").doc(user.uid).get();
+              const isAdmin = doc.data()?.role === "admin";
+              console.log("Admin:", isAdmin);
+    
+              // Handle visibility based on role
+              document.querySelectorAll(".admin-only").forEach(el => {
+                if (isAdmin) el.classList.remove("hidden");
+                else el.classList.add("hidden");
+              });
+    
+              document.querySelectorAll(".user-only").forEach(el => {
+                if (!isAdmin) el.classList.remove("hidden");
+                else el.classList.add("hidden");
+              });
+    
+              // Default section shown: View Books
+              showSection("view-books");
+    
+            } catch (err) {
+              console.error("Error getting user role:", err);
+            }
           } else {
-            // Hide all nav buttons except "View Books"
-            navButtons.forEach(btn => {
-              const section = btn.getAttribute("data-section");
-              if (section !== "view-books") {
-                btn.classList.add("hidden");
-              } else {
-                btn.classList.remove("hidden");
-              }
-            });
-
-            // Hide all sections except "View Books"
-            allSections.forEach(sec => {
-              if (sec.id !== "view-books") {
-                sec.classList.add("hidden");
-              } else {
-                sec.classList.remove("hidden");
-              }
-            });
+            console.log("No user logged in.");
+            // Optional redirect to login
           }
-
-        } catch (error) {
-          console.error("Error checking user role:", error);
-        }
-      } else {
-        console.log("No user logged in.");
-        // Optionally redirect to login
-      }
-    });
-
-    // Basic nav section switching
-    const navButtons = document.querySelectorAll('.nav-link');
-    navButtons.forEach(button => {
-      button.addEventListener('click', () => {
-        const sectionId = button.getAttribute('data-section');
-        document.querySelectorAll('.section').forEach(section => {
-          section.classList.add('hidden');
         });
-        const activeSection = document.getElementById(sectionId);
-        if (activeSection) {
-          activeSection.classList.remove('hidden');
+    
+        // Navigation switching
+        const navLinks = document.querySelectorAll('.nav-link');
+        navLinks.forEach(link => {
+          link.addEventListener('click', () => {
+            const sectionId = link.getAttribute('data-section');
+            showSection(sectionId);
+          });
+        });
+    
+        function showSection(sectionId) {
+          document.querySelectorAll('.section').forEach(sec => sec.classList.add("hidden"));
+          const active = document.getElementById(sectionId);
+          if (active) active.classList.remove("hidden");
         }
       });
-    });
-  });
-</script>
+    </script>
 
 </body>
 </html>
