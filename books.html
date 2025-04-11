@@ -94,20 +94,12 @@
             display: none;
         }
         
-        /* Show elements based on body class */
-        .body-user .user-only {
-            display: block;
-        }
-        
-        .body-admin .admin-only {
-            display: block;
-        }
-        
         /* Active tab styling */
         .nav-link.active {
             border-bottom: 2px solid #3b82f6;
             font-weight: 600;
         }
+        
     </style>
 </head>
 <body class="bg-gray-50">
@@ -129,7 +121,7 @@
                         <i class="fas fa-book mr-2"></i>Profile Dashboard
                     </a>                    
                     <!-- Always show Books link -->
-                    <a href="books.html" class="px-4 py-2 rounded-lg bg-blue-500 bg-opacity-30 hover:bg-opacity-40 hidden">
+                    <a href="books.html" class="px-4 py-2 rounded-lg bg-blue-500 bg-opacity-30 hover:bg-opacity-40">
                         <i class="fas fa-book mr-2"></i>Books Dashboard
                     </a>
                     
@@ -734,27 +726,36 @@
             const sections = document.querySelectorAll('.section-content');
 
             // Firebase Authentication State Listener
-            auth.onAuthStateChanged((user) => {
-                if (user) {
-                    // Show common sections for all authenticated users
-                    document.querySelector('[data-section="view-books"]').classList.remove('hidden');
-                    document.querySelector('[data-section="search-books"]').classList.remove('hidden');
-
-                    // Admin-specific sections
-                    if (user.email === 'admin@example.com') {
-                        document.querySelector('[data-section="admin-book-management"]').classList.remove('hidden');
-                        document.querySelector('[data-section="system-statistics"]').classList.remove('hidden');
-                        document.querySelector('[data-section="review-management"]').classList.remove('hidden');
-                    } else {
-                        // User-specific sections
-                        document.querySelector('[data-section="my-bookmarks"]').classList.remove('hidden');
-                        document.querySelector('[data-section="book-suggestions"]').classList.remove('hidden');
-                    }
-                } else {
-                    // Redirect to login if not authenticated
-                    window.location.href = 'index.html';
-                }
-            });
+            auth.onAuthStateChanged(async (user) => {
+                        if (user) {
+                            try {
+                                // Get user role from Firestore
+                                const userDoc = await firebase.firestore().collection('users').doc(user.uid).get();
+                                const userData = userDoc.data();
+                                const userRole = userData?.role || 'user';
+            
+                                // Show/hide elements based on role
+                                document.querySelectorAll('.admin-only, .user-only').forEach(el => el.classList.add('hidden'));
+                                
+                                if (userRole === 'admin') {
+                                    document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden'));
+                                } else {
+                                    document.querySelectorAll('.user-only').forEach(el => el.classList.remove('hidden'));
+                                }
+            
+                                // Always show common sections
+                                document.querySelectorAll('[data-section="view-books"], [data-section="search-books"]')
+                                    .forEach(el => el.classList.remove('hidden'));
+            
+                            } catch (error) {
+                                console.error('Error fetching user role:', error);
+                                // Handle error or redirect
+                            }
+                        } else {
+                            window.location.href = 'index.html';
+                        }
+                    });
+                });
 
             // Navigation Link Click Event Handlers
             navLinks.forEach(link => {
