@@ -93,65 +93,85 @@
   </form>
 
   <script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyBL0n0BJsba-CEvYmyOVJ3aTHSntWXNx84",
-        authDomain: "dls-digital-library-system.firebaseapp.com",
-        projectId: "dls-digital-library-system",
-        storageBucket: "dls-digital-library-system.firebasestorage.app",
-        messagingSenderId: "316017046740",
-        appId: "1:316017046740:web:ecdcfd5b8980901f4cf741",
-        measurementId: "G-HY9T2WZJ5V"
+      const firebaseConfig = {
+          apiKey: "AIzaSyBL0n0BJsba-CEvYmyOVJ3aTHSntWXNx84",
+          authDomain: "dls-digital-library-system.firebaseapp.com",
+          projectId: "dls-digital-library-system",
+          storageBucket: "dls-digital-library-system.firebasestorage.app",
+          messagingSenderId: "316017046740",
+          appId: "1:316017046740:web:ecdcfd5b8980901f4cf741",
+          measurementId: "G-HY9T2WZJ5V"
       };
-    
-    firebase.initializeApp(firebaseConfig);
-    
-      // Firebase services
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-    
-    // Registration function
-    document.getElementById('registerBtn').addEventListener('click', async function() {
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      const fullName = document.getElementById('fullName').value;
-      const age = document.getElementById('age').value;
-      const location = document.getElementById('location').value;
-      const gender = document.getElementById('gender').value;
       
-      // Clear previous errors
-      document.getElementById('errorMsg').textContent = '';
-      
-      try {
-        // Validate required fields
-        if (!email || !password) {
-          throw new Error('Email and password are required');
-        }
-        
-        // Create user in Firebase Auth
-        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-        const userId = userCredential.user.uid;
-        
-        // Create user document in Firestore
-        await db.collection("users").doc(userId).set({
-          email: email,
-          role: "user", // Default role
-          fullName: fullName || null,
-          age: age ? parseInt(age) : null,
-          location: location || null,
-          gender: gender || null,
-          joiningDate: firebase.firestore.FieldValue.serverTimestamp(),
-          lastActive: firebase.firestore.FieldValue.serverTimestamp(),
-          status: "active"
-        });
-        
-        // Redirect to dashboard after successful registration
-        window.location.href = "/digital-library-system/books.html";
-        
-      } catch (error) {
-        console.error("Registration error:", error);
-        document.getElementById('errorMsg').textContent = error.message;
-      }
-    });
+      firebase.initializeApp(firebaseConfig);
+      const auth = firebase.auth();
+      const db = firebase.firestore();
+  
+      // Auth state listener with Firestore verification
+      auth.onAuthStateChanged(async (user) => {
+          if (user) {
+              try {
+                  // Verify Firestore document exists
+                  const doc = await db.collection("users").doc(user.uid).get();
+                  if (!doc.exists) {
+                      console.log("No Firestore document found, logging out");
+                      await auth.signOut();
+                      return;
+                  }
+                  // Redirect only after document verification
+                  window.location.href = "/profile.html";
+              } catch (error) {
+                  console.error("Document verification error:", error);
+              }
+          } else {
+              document.getElementById('registerForm').style.display = 'block';
+          }
+      });
+  
+      // Registration handler
+      document.getElementById('registerBtn').addEventListener('click', async function() {
+          const email = document.getElementById('email').value;
+          const password = document.getElementById('password').value;
+          const fullName = document.getElementById('fullName').value;
+          const age = document.getElementById('age').value;
+          const location = document.getElementById('location').value;
+          const gender = document.getElementById('gender').value;
+          
+          document.getElementById('errorMsg').textContent = '';
+          
+          try {
+              if (!email || !password) throw new Error('Email and password are required');
+              
+              // Create user
+              const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+              const userId = userCredential.user.uid;
+              
+              // Create Firestore document
+              await db.collection("users").doc(userId).set({
+                  email: email,
+                  role: "user",
+                  fullName: fullName || null,
+                  age: age ? parseInt(age) : null,
+                  location: location || null,
+                  gender: gender || null,
+                  joiningDate: firebase.firestore.FieldValue.serverTimestamp(),
+                  lastActive: firebase.firestore.FieldValue.serverTimestamp(),
+                  status: "active"
+              });
+  
+              // Force token refresh to ensure latest data
+              await userCredential.user.getIdToken(true);
+              
+          } catch (error) {
+              console.error("Registration error:", error);
+              document.getElementById('errorMsg').textContent = error.message;
+              
+              // Cleanup failed registration
+              if (auth.currentUser) {
+                  await auth.currentUser.delete();
+              }
+          }
+      });
   </script>
 </body>
 </html>
