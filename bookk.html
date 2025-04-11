@@ -149,8 +149,7 @@
         </nav>
 
         <!-- View Books Section -->
-        <div id="view-books" class="tab-section">
-        <section id="view-books" class="section-content bg-white shadow-md rounded-lg p-6 mb-8">
+        <section id="view-books" class="section-content hidden bg-white shadow-md rounded-lg p-6 mb-8">
             <div class="flex">
                 <!-- Sidebar for Sorting and Filtering -->
                 <div class="w-1/4 pr-6 border-r">
@@ -211,11 +210,8 @@
                 </div>
             </div>
         </section>
-        </div>
-
         <!-- Search Books Section -->
-        <div id="search-books" class="tab-section">
-        <section id="search-books" class="section-content bg-white shadow-md rounded-lg p-6 mb-8 hidden">
+        <section id="search-books" class="section-content hidden bg-white shadow-md rounded-lg p-6 mb-8">
             <h2 class="text-xl font-semibold mb-4">Search Books</h2>
             <div class="flex gap-4 mb-6">
                 <input type="text" id="search-input" class="flex-1 px-4 py-2 border rounded" placeholder="Search by title, author, or genre">
@@ -231,10 +227,8 @@
                 <!-- Search results will be dynamically inserted here -->
             </div>
         </section>
-        </div>
         <!-- Book Suggestions Section -->
-        <div id="book-suggestions" class="tab-section user-only hidden">
-        <section id="book-suggestions" class="section-content bg-white shadow-md rounded-lg p-6 mb-8 hidden">
+        <section id="book-suggestions" class="section-content hidden bg-white shadow-md rounded-lg p-6 mb-8">
             <h2 class="text-xl font-semibold mb-4">Suggest a Book</h2>
             <form id="suggestion-form">
                 <div class="mb-3">
@@ -250,11 +244,8 @@
             </form>
             <div id="suggestion-status" class="mt-4"></div>
         </section>
-        </div>
-
         <!-- Admin Book Management Section -->
-        <div id="admin-book-management" class="tab-section admin-only hidden">
-        <section id="admin-book-management" class="section-content bg-white shadow-md rounded-lg p-6 mb-8 hidden">
+        <section id="admin-book-management" class="section-content admin-only hidden bg-white shadow-md rounded-lg p-6 mb-8">
             <h2 class="text-xl font-semibold mb-4">Admin Book Management</h2>
             <button id="add-book" class="bg-blue-500 text-white px-4 py-2 rounded mb-6">Add Book</button>
             <!-- Replace your current Add Book form with this -->
@@ -381,10 +372,8 @@
                 <!-- Book cards will be dynamically inserted here -->
             </div>
         </section>
-        </div>
         <!-- System Statistics Section -->
-        <div id="system-statistics" class="tab-section admin-only hidden">
-        <section id="system-statistics" class="section-content bg-white shadow-md rounded-lg p-6 mb-8 hidden">
+        <section id="system-statistics" class="section-content hidden bg-white shadow-md rounded-lg p-6 mb-8">
             <h2 class="text-xl font-semibold mb-4">System Statistics</h2>
             <div id="user-reports" class="mb-4">
                 <!-- User reports will be dynamically inserted here -->
@@ -393,7 +382,6 @@
                 <!-- Book reports will be dynamically inserted here -->
             </div>
         </section>
-        </div>
     
             <!-- Book Viewer Modal -->
         <div id="book-viewer" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
@@ -718,43 +706,64 @@
 
     <!-- Inline JavaScript for Initial Page Setup -->
     <script>
-      document.addEventListener("DOMContentLoaded", () => {
-        auth.onAuthStateChanged(async (user) => {
-          if (!user) return;
+    document.addEventListener("DOMContentLoaded", () => {
+      const allSections = document.querySelectorAll(".section-content");
+      const navLinks = document.querySelectorAll(".nav-link");
     
-          const userDoc = await db.collection("users").doc(user.uid).get();
-          const isAdmin = userDoc.exists && userDoc.data().role === "admin";
+      // Section toggle by button click
+      navLinks.forEach(btn => {
+        btn.addEventListener("click", () => {
+          const target = btn.getAttribute("data-section");
     
-          // Show/hide admin-only sections
+          // Hide all sections
+          allSections.forEach(sec => sec.classList.add("hidden"));
+    
+          // Remove active style from all nav buttons
+          navLinks.forEach(link => {
+            link.classList.remove("border-blue-500", "font-semibold");
+          });
+    
+          // Show target section
+          const showSection = document.getElementById(target);
+          if (showSection) showSection.classList.remove("hidden");
+    
+          // Highlight active button
+          btn.classList.add("border-blue-500", "font-semibold");
+        });
+      });
+    
+      // Auth state listener
+      auth.onAuthStateChanged(async (user) => {
+        if (!user) {
+          console.warn("No user logged in.");
+          return;
+        }
+    
+        try {
+          const doc = await db.collection("users").doc(user.uid).get();
+          const role = doc.exists ? doc.data().role : "user";
+    
+          const isAdmin = role === "admin";
+          const isUser = !isAdmin;
+    
+          // Toggle visibility based on role
           document.querySelectorAll(".admin-only").forEach(el => {
             el.classList.toggle("hidden", !isAdmin);
           });
     
-          // Show only View Books by default
-          switchSection("view-books");
-    
-          // Nav button click handler
-          document.querySelectorAll(".nav-link").forEach(btn => {
-            btn.addEventListener("click", () => {
-              const sectionId = btn.getAttribute("data-section");
-              switchSection(sectionId);
-            });
-          });
-        });
-    
-        function switchSection(sectionId) {
-          document.querySelectorAll(".section").forEach(sec => {
-            sec.classList.add("hidden");
+          document.querySelectorAll(".user-only").forEach(el => {
+            el.classList.toggle("hidden", !isUser);
           });
     
-          const section = document.getElementById(sectionId);
-          if (section) {
-            section.classList.remove("hidden");
-          }
+          // Show default section: View Books
+          document.querySelector('[data-section="view-books"]')?.click();
+    
+        } catch (error) {
+          console.error("Failed to fetch user role:", error);
         }
       });
+    });
     </script>
-
 
 </body>
 </html>
