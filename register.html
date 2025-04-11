@@ -115,47 +115,51 @@
             </div>
         </div>
     </header>
-  <h1>Create Your Account</h1>
   
-  <form id="registerForm">
-    <div class="form-group">
-      <label for="email">Email*</label>
-      <input type="email" id="email" required>
-    </div>
-    
-    <div class="form-group">
-      <label for="password">Password* (min 6 characters)</label>
-      <input type="password" id="password" required minlength="6">
-    </div>
-    
-    <div class="form-group">
-      <label for="fullName">Full Name</label>
-      <input type="text" id="fullName">
-    </div>
-    
-    <div class="form-group">
-      <label for="age">Age</label>
-      <input type="number" id="age" min="13">
-    </div>
-    
-    <div class="form-group">
-      <label for="location">Location (City, Country)</label>
-      <input type="text" id="location">
-    </div>
-    
-    <div class="form-group">
-      <label for="gender">Gender</label>
-      <select id="gender">
-        <option value="">Select</option>
-        <option value="male">Male</option>
-        <option value="female">Female</option>
-        <option value="other">Other</option>
-      </select>
-    </div>
-    
-    <button type="button" id="registerBtn">Register</button>
-    <div id="errorMsg" class="error"></div>
-  </form>
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+      <h1>Create Your Account</h1>
+      
+      <form id="registerForm">
+        <div class="form-group">
+          <label for="email">Email*</label>
+          <input type="email" id="email" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="password">Password* (min 6 characters)</label>
+          <input type="password" id="password" required minlength="6">
+        </div>
+        
+        <div class="form-group">
+          <label for="fullName">Full Name</label>
+          <input type="text" id="fullName">
+        </div>
+        
+        <div class="form-group">
+          <label for="age">Age</label>
+          <input type="number" id="age" min="13">
+        </div>
+        
+        <div class="form-group">
+          <label for="location">Location (City, Country)</label>
+          <input type="text" id="location">
+        </div>
+        
+        <div class="form-group">
+          <label for="gender">Gender</label>
+          <select id="gender">
+            <option value="">Select</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        
+        <button type="button" id="registerBtn">Register</button>
+        <div id="errorMsg" class="error"></div>
+      </form>
+    </main>
   <!-- Footer Section -->
   <footer class="bg-blue-600 py-6 text-white">
       <div class="container mx-auto px-4">
