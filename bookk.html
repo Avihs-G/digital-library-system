@@ -90,12 +90,17 @@
             background: #a0aec0;
         }
         /* Admin Visibility Control */
-        .admin-only {
+        .hidden {
             display: none !important;
+        }
+    
+        /* Modify existing admin visibility rules */
+        .admin-only {
+            display: none;
         }
         
         body.role-admin .admin-only {
-            display: block !important;
+            display: block;
         }
     
         /* For inline elements like buttons */
@@ -220,7 +225,7 @@
             </div>
         </section>
         <!-- Search Books Section -->
-        <section id="search-books" class="section-content bg-white shadow-md rounded-lg p-6 mb-8">
+        <section id="search-books" class="section-content hidden bg-white shadow-md rounded-lg p-6 mb-8">
             <h2 class="text-xl font-semibold mb-4">Search Books</h2>
             <div class="flex gap-4 mb-6">
                 <input type="text" id="search-input" class="flex-1 px-4 py-2 border rounded" placeholder="Search by title, author, or genre">
@@ -237,7 +242,7 @@
             </div>
         </section>
         <!-- Book Suggestions Section -->
-        <section id="book-suggestions" class="section-content bg-white shadow-md rounded-lg p-6 mb-8">
+        <section id="book-suggestions" class="section-content hidden bg-white shadow-md rounded-lg p-6 mb-8">
             <h2 class="text-xl font-semibold mb-4">Suggest a Book</h2>
             <form id="suggestion-form">
                 <div class="mb-3">
@@ -254,7 +259,7 @@
             <div id="suggestion-status" class="mt-4"></div>
         </section>
         <!-- Admin Book Management Section -->
-        <section id="admin-book-management" class="section-content admin-only bg-white shadow-md rounded-lg p-6 mb-8">
+        <section id="admin-book-management" class="section-content hidden admin-only bg-white shadow-md rounded-lg p-6 mb-8">
             <h2 class="text-xl font-semibold mb-4">Admin Book Management</h2>
             <button id="add-book" class="bg-blue-500 text-white px-4 py-2 rounded mb-6">Add Book</button>
             <!-- Replace your current Add Book form with this -->
@@ -382,7 +387,7 @@
             </div>
         </section>
         <!-- System Statistics Section -->
-        <section id="system-statistics" class="section-content admin-only bg-white shadow-md rounded-lg p-6 mb-8">
+        <section id="system-statistics" class="section-content hidden admin-only bg-white shadow-md rounded-lg p-6 mb-8">
             <h2 class="text-xl font-semibold mb-4">System Statistics</h2>
             <div id="user-reports" class="mb-4">
                 <!-- User reports will be dynamically inserted here -->
@@ -724,15 +729,10 @@
             // Hide all sections
             allSections.forEach(sec => sec.classList.add('hidden'));
             
-            // Show target section if allowed
+            // Show target section
             const section = document.getElementById(targetSection);
             if (section) {
-                const isAdminSection = section.classList.contains('admin-only');
-                const isAdmin = document.body.classList.contains('role-admin');
-                
-                if (!isAdminSection || (isAdminSection && isAdmin)) {
-                    section.classList.remove('hidden');
-                }
+                section.classList.remove('hidden');
             }
         }
     
@@ -764,7 +764,9 @@
                 const defaultSection = role === 'admin' ? 
                     'admin-book-management' : 'view-books';
                 
-                document.querySelector(`[data-section="${defaultSection}"]`).click();
+                // Show default section
+                handleSectionNavigation(defaultSection);
+                document.querySelector(`[data-section="${defaultSection}"]`).classList.add('active');
     
             } catch (error) {
                 console.error("Authentication error:", error);
