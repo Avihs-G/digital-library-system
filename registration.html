@@ -13,6 +13,9 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="js/firebaseConfig.js" defer></script>
+    <!-- Your Custom Scripts -->
+    <script src="js/auth.js" defer></script>
     <style>
         /* Add this at the very top of your CSS */
         :root {
@@ -40,7 +43,6 @@
     </style>
 </head>
 <body class="bg-gray-50">
-    <!-- Header -->
     <header class="text-white py-6">
         <div class="container mx-auto px-4">
             <div class="flex flex-col md:flex-row justify-between items-center">
@@ -49,9 +51,18 @@
                     <p class="text-blue-100 mt-1">Your gateway to knowledge</p>
                 </div>
                 <nav class="flex items-center space-x-4 nav-buttons">
-                    <a href="login.html" class="px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-400">
-                        <i class="fas fa-sign-in-alt mr-2"></i>Login
+                    <a href="profile.html" class="px-4 py-2 rounded-lg bg-blue-500 bg-opacity-20 hover:bg-opacity-30 hidden" id="profile-link">
+                        <i class="fas fa-user mr-2"></i>Profile
                     </a>
+                    <a href="books.html" class="px-4 py-2 rounded-lg bg-blue-500 bg-opacity-20 hover:bg-opacity-30 hidden" id="books-link">
+                        <i class="fas fa-book mr-2"></i>Books
+                    </a>
+                    <button id="logout" class="px-4 py-2 rounded-lg bg-white text-blue-600 hover:bg-gray-100 hidden">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                    </button>
+                    <button id="login-button" class="px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-400">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Login
+                    </button>
                 </nav>
             </div>
         </div>
@@ -135,22 +146,68 @@
         </div>
     </footer>
 
+    <!-- Login Modal -->
+    <div id="login-modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-50">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-800">Login to Your Account</h3>
+                <button id="close-login-modal" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <form id="login" class="space-y-4">
+                <div>
+                    <label for="login-email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input type="email" id="login-email" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="your@email.com" required>
+                </div>
+                <div>
+                    <label for="login-password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <input type="password" id="login-password" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition">
+                    <i class="fas fa-sign-in-alt mr-2"></i>Login
+                </button>
+                <p class="text-center text-sm text-gray-600">
+                    <a href="#" id="forgot-password-link" class="text-blue-600 hover:underline">Forgot your password?</a>
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Forgot Password Modal -->
+    <div id="forgot-password-modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-50">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-800">Reset Your Password</h3>
+                <button id="close-forgot-password-modal" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <form id="forgot-password-form" class="space-y-4">
+                <div>
+                    <label for="forgot-password-email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input type="email" id="forgot-password-email" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="your@email.com" required>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition">
+                    <i class="fas fa-paper-plane mr-2"></i>Send Reset Link
+                </button>
+            </form>
+        </div>
+    </div>
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyBL0n0BJsba-CEvYmyOVJ3aTHSntWXNx84",
-            authDomain: "dls-digital-library-system.firebaseapp.com",
-            projectId: "dls-digital-library-system",
-            storageBucket: "dls-digital-library-system.firebasestorage.app",
-            messagingSenderId: "316017046740",
-            appId: "1:316017046740:web:ecdcfd5b8980901f4cf741",
-            measurementId: "G-HY9T2WZJ5V"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-
         document.getElementById('registerBtn').addEventListener('click', async function() {
+            const loginButton = document.getElementById('login-button');
+            const profileLink = document.getElementById('profile-link');
+            const booksLink = document.getElementById('books-link');
+            const logoutButton = document.getElementById('logout');
+            const loginModal = document.getElementById('login-modal');
+            const forgotPasswordModal = document.getElementById('forgot-password-modal');
+            const closeLoginModal = document.getElementById('close-login-modal');
+            const closeRegisterModal = document.getElementById('close-register-modal');
+            const closeForgotPasswordModal = document.getElementById('close-forgot-password-modal');
+            const forgotPasswordLink = document.getElementById('forgot-password-link');
+            const forgotPasswordForm = document.getElementById('forgot-password-form');
+            const switchToLogin = document.getElementById('switch-to-login');
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const fullName = document.getElementById('fullName').value;
@@ -185,6 +242,77 @@
                 console.error("Registration error:", error);
                 document.getElementById('errorMsg').textContent = error.message;
             }
+            
+            // Show login modal
+            loginButton.addEventListener('click', () => {
+                loginModal.classList.remove('hidden');
+            });
+
+            // Switch to login from register
+            switchToLogin.addEventListener('click', (e) => {
+                e.preventDefault();
+                registerModal.classList.add('hidden');
+                loginModal.classList.remove('hidden');
+            });
+
+            // Show forgot password modal
+            forgotPasswordLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                loginModal.classList.add('hidden');
+                forgotPasswordModal.classList.remove('hidden');
+            });
+
+            // Close login modal
+            closeLoginModal.addEventListener('click', () => {
+                loginModal.classList.add('hidden');
+            });
+
+            // Close forgot password modal
+            closeForgotPasswordModal.addEventListener('click', () => {
+                forgotPasswordModal.classList.add('hidden');
+            });
+
+            // Handle forgot password form submission
+            forgotPasswordForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const email = document.getElementById('forgot-password-email').value;
+                auth.sendPasswordResetEmail(email)
+                    .then(() => {
+                        alert('Password reset email sent!');
+                        forgotPasswordModal.classList.add('hidden');
+                    })
+                    .catch((error) => {
+                        console.error('Error sending password reset email:', error.message);
+                        alert('Error: ' + error.message);
+                    });
+            });
+
+            // Check if user is logged in
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    // User is logged in
+                    profileLink.classList.remove('hidden');
+                    booksLink.classList.remove('hidden');
+                    logoutButton.classList.remove('hidden');
+                    loginButton.classList.add('hidden');
+                    registerButton.classList.add('hidden');
+                } else {
+                    // User is not logged in
+                    profileLink.classList.add('hidden');
+                    booksLink.classList.add('hidden');
+                    logoutButton.classList.add('hidden');
+                    loginButton.classList.remove('hidden');
+                    registerButton.classList.remove('hidden');
+                }
+            });
+
+            logoutButton.addEventListener('click', () => {
+                auth.signOut().then(() => {
+                    window.location.href = 'index.html';
+                }).catch((error) => {
+                    console.error('Error logging out:', error);
+                });
+            });
         });
     </script>
 </body>
