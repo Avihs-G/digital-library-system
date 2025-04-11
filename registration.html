@@ -92,24 +92,28 @@
             messagingSenderId: "316017046740",
             appId: "1:316017046740:web:ecdcfd5b8980901f4cf741"
         };
-    
+
         try {
+            // Initialize Firebase
             firebase.initializeApp(firebaseConfig);
             const auth = firebase.auth();
             const db = firebase.firestore();
-    
+
+            // Auth state listener
             auth.onAuthStateChanged(user => {
-                document.getElementById('loading').style.display = 'none';
+                const loading = document.getElementById('loading');
+                if (loading) loading.style.display = 'none';
                 
                 if (user) {
                     console.log('Redirecting authenticated user');
                     window.location.href = '/digital-library-system/books.html';
                 } else {
                     console.log('Showing registration form');
-                    document.getElementById('registerForm').style.display = 'block';
+                    const form = document.getElementById('registerForm');
+                    if (form) form.style.display = 'block';
                 }
             });
-    
+            
             // Registration handler
             document.getElementById('registerBtn').addEventListener('click', async (e) => {
                 e.preventDefault();
@@ -157,11 +161,21 @@
                     
                     // Reset button
                     const btn = document.getElementById('registerBtn');
-                    btn.innerHTML = '<i class="fas fa-user-plus mr-2"></i>Register';
-                    btn.disabled = false;
+                    if (btn) {
+                        btn.innerHTML = '<i class="fas fa-user-plus mr-2"></i>Register';
+                        btn.disabled = false;
+                    }
                 }
             });
-        });
+
+        } catch (error) { // This was missing in your code
+            console.error('Initialization error:', error);
+            const loading = document.getElementById('loading');
+            if (loading) {
+                loading.innerHTML = '<p class="text-red-500">Error initializing application. Please refresh the page.</p>';
+            }
+        }
+    });
     </script>
 </body>
 </html>
