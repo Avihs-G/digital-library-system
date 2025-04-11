@@ -717,54 +717,70 @@
     </footer>
 
     <!-- Inline JavaScript for Initial Page Setup -->
-    <script>
-      document.addEventListener('DOMContentLoaded', () => {
-        const navLinks = document.querySelectorAll('.nav-link');
-        const sections = document.querySelectorAll('.tab-section');
-    
-        function showSection(id) {
-          sections.forEach(section => {
-            section.classList.toggle('hidden', section.id !== id);
-          });
-    
-          navLinks.forEach(link => {
-            link.classList.toggle('border-blue-500', link.dataset.section === id);
-            link.classList.toggle('text-blue-800', link.dataset.section === id);
-          });
-        }
-    
-        // Set default section (e.g., view-books)
-        showSection('view-books');
-    
-        // Add click listeners to nav buttons
-        navLinks.forEach(link => {
-          link.addEventListener('click', () => {
-            showSection(link.dataset.section);
-          });
-        });
-    
-        // Auth role-based visibility setup
-        auth.onAuthStateChanged(user => {
-          if (user) {
-            const userEmail = user.email;
-            db.collection('users').doc(user.uid).get().then(doc => {
-              const userData = doc.data();
-              const isAdmin = userData?.role === 'admin';
-    
-              document.querySelectorAll('.admin-only').forEach(el => {
-                el.classList.toggle('hidden', !isAdmin);
-              });
-    
-              document.querySelectorAll('.user-only').forEach(el => {
-                el.classList.toggle('hidden', isAdmin);
-              });
-    
-            }).catch(error => {
-              console.error("Error fetching user role:", error);
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        console.log("User authenticated:", user.email);
+        try {
+          const doc = await db.collection("users").doc(user.uid).get();
+          const data = doc.data();
+          const isAdmin = data?.role === "admin";
+          console.log("Admin:", isAdmin);
+
+          const allSections = document.querySelectorAll(".section");
+          const navButtons = document.querySelectorAll(".nav-link");
+
+          if (isAdmin) {
+            // Show all nav buttons and sections
+            navButtons.forEach(btn => btn.classList.remove("hidden"));
+            allSections.forEach(sec => sec.classList.remove("hidden"));
+          } else {
+            // Hide all nav buttons except "View Books"
+            navButtons.forEach(btn => {
+              const section = btn.getAttribute("data-section");
+              if (section !== "view-books") {
+                btn.classList.add("hidden");
+              } else {
+                btn.classList.remove("hidden");
+              }
+            });
+
+            // Hide all sections except "View Books"
+            allSections.forEach(sec => {
+              if (sec.id !== "view-books") {
+                sec.classList.add("hidden");
+              } else {
+                sec.classList.remove("hidden");
+              }
             });
           }
+
+        } catch (error) {
+          console.error("Error checking user role:", error);
+        }
+      } else {
+        console.log("No user logged in.");
+        // Optionally redirect to login
+      }
+    });
+
+    // Basic nav section switching
+    const navButtons = document.querySelectorAll('.nav-link');
+    navButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const sectionId = button.getAttribute('data-section');
+        document.querySelectorAll('.section').forEach(section => {
+          section.classList.add('hidden');
         });
+        const activeSection = document.getElementById(sectionId);
+        if (activeSection) {
+          activeSection.classList.remove('hidden');
+        }
       });
-    </script>
+    });
+  });
+</script>
+
 </body>
 </html>
