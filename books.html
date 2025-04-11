@@ -724,40 +724,31 @@
             // Navigation Links Selection
             const navLinks = document.querySelectorAll('.nav-link');
             const sections = document.querySelectorAll('.section-content');
-
-            // Firebase Authentication State Listener
+    
             auth.onAuthStateChanged(async (user) => {
-                        if (user) {
-                            try {
-                                // Get user role from Firestore
-                                const userDoc = await firebase.firestore().collection('users').doc(user.uid).get();
-                                const userData = userDoc.data();
-                                const userRole = userData?.role || 'user';
-            
-                                // Show/hide elements based on role
-                                document.querySelectorAll('.admin-only, .user-only').forEach(el => el.classList.add('hidden'));
-                                
-                                if (userRole === 'admin') {
-                                    document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden'));
-                                } else {
-                                    document.querySelectorAll('.user-only').forEach(el => el.classList.remove('hidden'));
-                                }
-            
-                                // Always show common sections
-                                document.querySelectorAll('[data-section="view-books"], [data-section="search-books"]')
-                                    .forEach(el => el.classList.remove('hidden'));
-            
-                            } catch (error) {
-                                console.error('Error fetching user role:', error);
-                                // Handle error or redirect
-                            }
-                        } else {
-                            window.location.href = 'index.html';
+                if (user) {
+                    try {
+                        const userDoc = await db.collection('users').doc(user.uid).get();
+                        const userData = userDoc.data();
+                        const userRole = userData?.role || 'user';
+    
+                        // Reset visibility first
+                        document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden'));
+    
+                        if (userRole === 'admin') {
+                            // Show admin-only buttons
+                            document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden'));
                         }
-                    });
-                });
-
-            // Navigation Link Click Event Handlers
+    
+                    } catch (error) {
+                        console.error('Error fetching user role:', error);
+                    }
+                } else {
+                    window.location.href = 'index.html'; // Not logged in
+                }
+            });
+    
+            // Navigation logic
             navLinks.forEach(link => {
                 link.addEventListener('click', () => {
                     const targetSection = link.getAttribute('data-section');
@@ -770,8 +761,7 @@
                     });
                 });
             });
-
-            // Show first section by default
+    
             if (sections.length > 0) {
                 sections[0].classList.remove('hidden');
             }
