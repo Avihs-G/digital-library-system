@@ -15,7 +15,6 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="js/firebaseConfig.js" defer></script>
     <!-- Your Custom Scripts -->
-    <script src="js/auth.js" defer></script>
     <style>
         /* Add this at the very top of your CSS */
         :root {
@@ -195,25 +194,39 @@
         </div>
     </div>
     <script>
-        // Initialize Firebase
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-    
-        // Debugging: Check Firebase initialization
-        console.log('Firebase initialized:', auth.app.name);
-    
-        // Immediate auth check with debug logging
         auth.onAuthStateChanged((user) => {
-            console.log('Auth state changed. User:', user);
-            
-            if (user) {
-                console.log('User is logged in, redirecting...');
-                window.location.href = 'books.html'; // Use relative path
-            } else {
-                console.log('User is not logged in, showing registration form');
-            }
+          if (user) {
+            window.location.href = 'books.html';
+          }
         });
-    
+        
+        // Registration handler
+        document.getElementById('registerBtn').addEventListener('click', async (e) => {
+          e.preventDefault();
+          
+          try {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+        
+            // Validation
+            if (!email || !password) throw new Error('Email and password are required');
+            if (password.length < 6) throw new Error('Password must be at least 6 characters');
+        
+            // Create user
+            const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+            
+            // Save user data
+            await db.collection("users").doc(userCredential.user.uid).set({
+              email: email,
+              created: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        
+            window.location.href = 'books.html';
+            
+          } catch (error) {
+            document.getElementById('errorMsg').textContent = error.message;
+          }
+        });
         // Registration Handler
         document.getElementById('registerBtn').addEventListener('click', async (e) => {
             e.preventDefault();
