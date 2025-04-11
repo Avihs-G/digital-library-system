@@ -722,64 +722,57 @@
     <!-- Inline JavaScript for Initial Page Setup -->
     <script>
     document.addEventListener("DOMContentLoaded", () => {
-        const allSections = document.querySelectorAll(".section-content");
-        const navLinks = document.querySelectorAll(".nav-link");
+      const navLinks = document.querySelectorAll(".nav-link");
+      const allSections = document.querySelectorAll(".section-content");
+      const adminOnlyButtons = document.querySelectorAll(".admin-only");
     
-        // Section toggle handler
-        function handleSectionClick(e) {
-            const targetSection = e.target.dataset.section;
-            
-            // Remove all active classes
-            navLinks.forEach(link => link.classList.remove('active'));
-            allSections.forEach(sec => sec.classList.add('hidden'));
-            
-            // Add active class to clicked nav
-            e.target.classList.add('active');
-            
-            // Show target section
-            const section = document.getElementById(targetSection);
-            if (section) section.classList.remove('hidden');
+      // Handle navigation switching
+      function handleSectionClick(e) {
+        const targetSection = e.target.dataset.section;
+    
+        // Hide all sections
+        allSections.forEach(sec => sec.classList.add("hidden"));
+    
+        // Show the clicked section
+        const sectionToShow = document.getElementById(targetSection);
+        if (sectionToShow) sectionToShow.classList.remove("hidden");
+    
+        // Update nav button styles
+        navLinks.forEach(btn => btn.classList.remove("border-blue-500"));
+        e.target.classList.add("border-blue-500");
+      }
+    
+      // Attach event listeners
+      navLinks.forEach(link => link.addEventListener("click", handleSectionClick));
+    
+      // Firebase Auth State
+      auth.onAuthStateChanged(async user => {
+        if (!user) {
+          window.location.href = "index.html";
+          return;
         }
     
-        // Add click listeners
-        navLinks.forEach(link => {
-            link.addEventListener('click', handleSectionClick);
-        });
+        try {
+          const userDoc = await db.collection("users").doc(user.uid).get();
+          const userData = userDoc.data();
+          const role = userData.role || "user";
     
-        // Auth state handler
-        auth.onAuthStateChanged(async user => {
-            if (!user) {
-                window.location.href = 'index.html';
-                return;
-            }
+          if (role === "admin") {
+            // Show admin-only buttons
+            adminOnlyButtons.forEach(btn => btn.classList.remove("hidden"));
+          }
     
-            try {
-                const userDoc = await db.collection("users").doc(user.uid).get();
-                
-                if (!userDoc.exists) {
-                    throw new Error("User document not found");
-                }
+          // Click default section
+          const defaultBtn = document.querySelector('[data-section="view-books"]');
+          if (defaultBtn) defaultBtn.click();
     
-                const userData = userDoc.data();
-                const role = userData.role || 'user';
-    
-                // Set body class
-                document.body.className = ''; // Reset classes
-                document.body.classList.add(`role-${role}`);
-    
-                // Show default section based on role
-                const defaultSection = role === 'admin' ? 
-                    'admin-book-management' : 'view-books';
-                    
-                document.querySelector(`[data-section="${defaultSection}"]`).click();
-    
-            } catch (error) {
-                console.error("Auth error:", error);
-                alert('Error loading user data');
-                auth.signOut();
-            }
-        });
+        } catch (err) {
+          console.error("Error loading user:", err);
+          auth.signOut();
+        }
+      });
     });
     </script>
+
 </body>
 </html>
