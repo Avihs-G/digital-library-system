@@ -89,9 +89,16 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #a0aec0;
         }
-        /* Hide role-specific elements by default */
-        .admin-only, .user-only {
-            display: none;
+        /* Role-based visibility */
+        .admin-only { display: none; }
+        .user-only { display: none; }
+        
+        .role-admin .admin-only {
+            display: block;
+        }
+        
+        .role-user .user-only {
+            display: block;
         }
         
         /* Active tab styling */
@@ -137,19 +144,19 @@
           <button data-section="search-books" class="nav-link py-2 px-4 text-blue-600 hover:text-blue-800 border-b-2 border-transparent hover:border-blue-500">
             Search Books
           </button>
-          <button data-section="book-suggestions" class="nav-link py-2 px-4 text-blue-600 hover:text-blue-800 border-b-2 border-transparent hover:border-blue-500 user-only hidden">
+          <button data-section="book-suggestions" class="nav-link py-2 px-4 text-blue-600 hover:text-blue-800 border-b-2 border-transparent hover:border-blue-500">
             Book Suggestions
           </button>
-          <button data-section="admin-book-management" class="nav-link py-2 px-4 text-blue-600 hover:text-blue-800 border-b-2 border-transparent hover:border-blue-500 admin-only hidden">
+          <button data-section="admin-book-management" class="nav-link py-2 px-4 text-blue-600 hover:text-blue-800 border-b-2 border-transparent hover:border-blue-500 admin-only">
             Admin Book Management
           </button>
-          <button data-section="system-statistics" class="nav-link py-2 px-4 text-blue-600 hover:text-blue-800 border-b-2 border-transparent hover:border-blue-500 admin-only hidden">
+          <button data-section="system-statistics" class="nav-link py-2 px-4 text-blue-600 hover:text-blue-800 border-b-2 border-transparent hover:border-blue-500 admin-only">
             System Statistics
           </button>
         </nav>
 
         <!-- View Books Section -->
-        <section id="view-books" class="section-content hidden bg-white shadow-md rounded-lg p-6 mb-8">
+        <section id="view-books" class="section-content bg-white shadow-md rounded-lg p-6 mb-8">
             <div class="flex">
                 <!-- Sidebar for Sorting and Filtering -->
                 <div class="w-1/4 pr-6 border-r">
@@ -211,7 +218,7 @@
             </div>
         </section>
         <!-- Search Books Section -->
-        <section id="search-books" class="section-content hidden bg-white shadow-md rounded-lg p-6 mb-8">
+        <section id="search-books" class="section-content bg-white shadow-md rounded-lg p-6 mb-8">
             <h2 class="text-xl font-semibold mb-4">Search Books</h2>
             <div class="flex gap-4 mb-6">
                 <input type="text" id="search-input" class="flex-1 px-4 py-2 border rounded" placeholder="Search by title, author, or genre">
@@ -228,7 +235,7 @@
             </div>
         </section>
         <!-- Book Suggestions Section -->
-        <section id="book-suggestions" class="section-content hidden bg-white shadow-md rounded-lg p-6 mb-8">
+        <section id="book-suggestions" class="section-content bg-white shadow-md rounded-lg p-6 mb-8">
             <h2 class="text-xl font-semibold mb-4">Suggest a Book</h2>
             <form id="suggestion-form">
                 <div class="mb-3">
@@ -245,7 +252,7 @@
             <div id="suggestion-status" class="mt-4"></div>
         </section>
         <!-- Admin Book Management Section -->
-        <section id="admin-book-management" class="section-content admin-only hidden bg-white shadow-md rounded-lg p-6 mb-8">
+        <section id="admin-book-management" class="section-content admin-only bg-white shadow-md rounded-lg p-6 mb-8">
             <h2 class="text-xl font-semibold mb-4">Admin Book Management</h2>
             <button id="add-book" class="bg-blue-500 text-white px-4 py-2 rounded mb-6">Add Book</button>
             <!-- Replace your current Add Book form with this -->
@@ -373,7 +380,7 @@
             </div>
         </section>
         <!-- System Statistics Section -->
-        <section id="system-statistics" class="section-content hidden bg-white shadow-md rounded-lg p-6 mb-8">
+        <section id="system-statistics" class="section-content bg-white shadow-md rounded-lg p-6 mb-8">
             <h2 class="text-xl font-semibold mb-4">System Statistics</h2>
             <div id="user-reports" class="mb-4">
                 <!-- User reports will be dynamically inserted here -->
@@ -707,61 +714,43 @@
     <!-- Inline JavaScript for Initial Page Setup -->
     <script>
     document.addEventListener("DOMContentLoaded", () => {
-      const allSections = document.querySelectorAll(".section-content");
-      const navLinks = document.querySelectorAll(".nav-link");
+        const allSections = document.querySelectorAll(".section-content");
+        const navLinks = document.querySelectorAll(".nav-link");
     
-      // Section toggle by button click
-      navLinks.forEach(btn => {
-        btn.addEventListener("click", () => {
-          const target = btn.getAttribute("data-section");
-    
-          // Hide all sections
-          allSections.forEach(sec => sec.classList.add("hidden"));
-    
-          // Remove active style from all nav buttons
-          navLinks.forEach(link => {
-            link.classList.remove("border-blue-500", "font-semibold");
-          });
-    
-          // Show target section
-          const showSection = document.getElementById(target);
-          if (showSection) showSection.classList.remove("hidden");
-    
-          // Highlight active button
-          btn.classList.add("border-blue-500", "font-semibold");
+        // Section toggle by button click
+        navLinks.forEach(btn => {
+            btn.addEventListener("click", () => {
+                const target = btn.getAttribute("data-section");
+                allSections.forEach(sec => sec.classList.add("hidden"));
+                navLinks.forEach(link => link.classList.remove("active"));
+                
+                const showSection = document.getElementById(target);
+                if (showSection) showSection.classList.remove("hidden");
+                btn.classList.add("active");
+            });
         });
-      });
     
-      // Auth state listener
-      auth.onAuthStateChanged(async (user) => {
-        if (!user) {
-          console.warn("No user logged in.");
-          return;
-        }
+        // Auth state listener
+        auth.onAuthStateChanged(async (user) => {
+            if (!user) {
+                window.location.href = 'index.html';
+                return;
+            }
     
-        try {
-          const doc = await db.collection("users").doc(user.uid).get();
-          const role = doc.exists ? doc.data().role : "user";
+            try {
+                const doc = await db.collection("users").doc(user.uid).get();
+                const role = doc.exists ? doc.data().role : "user";
+                
+                // Add role class to body
+                document.body.classList.add(`role-${role}`);
+                
+                // Show default section
+                document.querySelector('[data-section="view-books"]').click();
     
-          const isAdmin = role === "admin";
-          const isUser = !isAdmin;
-    
-          // Toggle visibility based on role
-          document.querySelectorAll(".admin-only").forEach(el => {
-            el.classList.toggle("hidden", !isAdmin);
-          });
-    
-          document.querySelectorAll(".user-only").forEach(el => {
-            el.classList.toggle("hidden", !isUser);
-          });
-    
-          // Show default section: View Books
-          document.querySelector('[data-section="view-books"]')?.click();
-    
-        } catch (error) {
-          console.error("Failed to fetch user role:", error);
-        }
-      });
+            } catch (error) {
+                console.error("Failed to fetch user role:", error);
+            }
+        });
     });
     </script>
 
