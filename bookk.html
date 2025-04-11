@@ -720,53 +720,41 @@
     <script>
       document.addEventListener("DOMContentLoaded", () => {
         auth.onAuthStateChanged(async (user) => {
-          if (user) {
-            console.log("User authenticated:", user.email);
+          if (!user) return;
     
-            try {
-              const doc = await db.collection("users").doc(user.uid).get();
-              const isAdmin = doc.data()?.role === "admin";
-              console.log("Admin:", isAdmin);
+          const userDoc = await db.collection("users").doc(user.uid).get();
+          const isAdmin = userDoc.exists && userDoc.data().role === "admin";
     
-              // Handle visibility based on role
-              document.querySelectorAll(".admin-only").forEach(el => {
-                if (isAdmin) el.classList.remove("hidden");
-                else el.classList.add("hidden");
-              });
+          // Show/hide admin-only sections
+          document.querySelectorAll(".admin-only").forEach(el => {
+            el.classList.toggle("hidden", !isAdmin);
+          });
     
-              document.querySelectorAll(".user-only").forEach(el => {
-                if (!isAdmin) el.classList.remove("hidden");
-                else el.classList.add("hidden");
-              });
+          // Show only View Books by default
+          switchSection("view-books");
     
-              // Default section shown: View Books
-              showSection("view-books");
-    
-            } catch (err) {
-              console.error("Error getting user role:", err);
-            }
-          } else {
-            console.log("No user logged in.");
-            // Optional redirect to login
-          }
-        });
-    
-        // Navigation switching
-        const navLinks = document.querySelectorAll('.nav-link');
-        navLinks.forEach(link => {
-          link.addEventListener('click', () => {
-            const sectionId = link.getAttribute('data-section');
-            showSection(sectionId);
+          // Nav button click handler
+          document.querySelectorAll(".nav-link").forEach(btn => {
+            btn.addEventListener("click", () => {
+              const sectionId = btn.getAttribute("data-section");
+              switchSection(sectionId);
+            });
           });
         });
     
-        function showSection(sectionId) {
-          document.querySelectorAll('.section').forEach(sec => sec.classList.add("hidden"));
-          const active = document.getElementById(sectionId);
-          if (active) active.classList.remove("hidden");
+        function switchSection(sectionId) {
+          document.querySelectorAll(".section").forEach(sec => {
+            sec.classList.add("hidden");
+          });
+    
+          const section = document.getElementById(sectionId);
+          if (section) {
+            section.classList.remove("hidden");
+          }
         }
       });
     </script>
+
 
 </body>
 </html>
