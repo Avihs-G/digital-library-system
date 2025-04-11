@@ -724,36 +724,43 @@
             // Navigation Links Selection
             const navLinks = document.querySelectorAll('.nav-link');
             const sections = document.querySelectorAll('.section-content');
-
+            
             auth.onAuthStateChanged(async (user) => {
                 if (user) {
-                    console.log("User logged in:", user.uid);
-        
+                    console.log("User authenticated:", user.email);
+            
                     try {
-                        const userDoc = await db.collection('users').doc(user.uid).get();
+                        const userDoc = await db.collection("users").doc(user.uid).get();
                         const userData = userDoc.data();
                         const userRole = userData?.role || 'user';
-        
-                        console.log("User role from Firestore:", userRole);
-        
+            
+                        console.log("User role:", userRole);
+            
+                        // Step 1: Always hide admin-only sections
+                        document.querySelectorAll('.admin-only').forEach(el => {
+                            el.classList.add('hidden');
+                        });
+            
+                        // Step 2: Only show them if role is admin
                         if (userRole === 'admin') {
                             document.querySelectorAll('.admin-only').forEach(el => {
                                 el.classList.remove('hidden');
-                                console.log("Showing:", el);
+                                console.log("Showing admin section:", el.dataset.section || el.id || el.textContent);
                             });
                         } else {
-                            console.log("Not admin. Admin sections stay hidden.");
+                            console.log("User is NOT admin. Admin-only sections stay hidden.");
                         }
-        
+            
                     } catch (error) {
                         console.error("Error fetching user role:", error);
                     }
+            
                 } else {
                     console.log("User not logged in. Redirecting...");
-                    window.location.href = 'index.html';
+                    window.location.href = "index.html";
                 }
             });
-        });
+
     
             // Navigation logic
             navLinks.forEach(link => {
