@@ -89,24 +89,18 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #a0aec0;
         }
-        /* Role-based Visibility */
-        .admin-only { display: none; }
-        .user-only { display: none; }
+        /* Admin Visibility Control */
+        .admin-only {
+            display: none !important;
+        }
         
         body.role-admin .admin-only {
-            display: block;
+            display: block !important;
         }
-        
+    
+        /* For inline elements like buttons */
         body.role-admin .admin-only.inline {
-            display: inline-block;
-        }
-        
-        body.role-user .user-only {
-            display: block;
-        }
-        
-        body.role-user .user-only.inline {
-            display: inline-block;
+            display: inline-block !important;
         }
         
         /* Active tab styling */
@@ -720,30 +714,34 @@
     </footer>
 
     <!-- Inline JavaScript for Initial Page Setup -->
-    <script>
     document.addEventListener("DOMContentLoaded", () => {
         const allSections = document.querySelectorAll(".section-content");
         const navLinks = document.querySelectorAll(".nav-link");
     
-        // Section toggle handler
-        function handleSectionClick(e) {
-            const targetSection = e.target.dataset.section;
-            
-            // Remove all active classes
-            navLinks.forEach(link => link.classList.remove('active'));
+        // Section visibility handler
+        function handleSectionNavigation(targetSection) {
+            // Hide all sections
             allSections.forEach(sec => sec.classList.add('hidden'));
             
-            // Add active class to clicked nav
-            e.target.classList.add('active');
-            
-            // Show target section
+            // Show target section if allowed
             const section = document.getElementById(targetSection);
-            if (section) section.classList.remove('hidden');
+            if (section) {
+                const isAdminSection = section.classList.contains('admin-only');
+                const isAdmin = document.body.classList.contains('role-admin');
+                
+                if (!isAdminSection || (isAdminSection && isAdmin)) {
+                    section.classList.remove('hidden');
+                }
+            }
         }
     
-        // Add click listeners
+        // Add click listeners to nav items
         navLinks.forEach(link => {
-            link.addEventListener('click', handleSectionClick);
+            link.addEventListener('click', (e) => {
+                navLinks.forEach(l => l.classList.remove('active'));
+                e.target.classList.add('active');
+                handleSectionNavigation(e.target.dataset.section);
+            });
         });
     
         // Auth state handler
@@ -755,31 +753,23 @@
     
             try {
                 const userDoc = await db.collection("users").doc(user.uid).get();
-                
-                if (!userDoc.exists) {
-                    throw new Error("User document not found");
-                }
-    
-                const userData = userDoc.data();
-                const role = userData.role || 'user';
+                const role = userDoc.data().role || 'user';
     
                 // Set body class
-                document.body.className = ''; // Reset classes
+                document.body.className = '';
                 document.body.classList.add(`role-${role}`);
     
-                // Show default section based on role
+                // Set default view
                 const defaultSection = role === 'admin' ? 
                     'admin-book-management' : 'view-books';
-                    
+                
                 document.querySelector(`[data-section="${defaultSection}"]`).click();
     
             } catch (error) {
-                console.error("Auth error:", error);
-                alert('Error loading user data');
+                console.error("Authentication error:", error);
                 auth.signOut();
             }
         });
     });
-    </script>
 </body>
 </html>
