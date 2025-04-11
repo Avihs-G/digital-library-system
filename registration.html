@@ -8,15 +8,8 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script    <!-- Keep existing head content -->
     <style>
-        /* Add this CSS */
-        #registerForm {
-            display: none; /* Hidden by default */
-        }
+        #registerForm { display: none; }
         .loading-spinner {
             animation: spin 1s linear infinite;
         }
@@ -30,12 +23,13 @@
     <div class="bg-white rounded-xl shadow-lg p-8 w-full max-w-md">
         <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">Create Account</h1>
         
-        <!-- Add a loading indicator -->
+        <!-- Loading Indicator -->
         <div id="loading" class="text-center text-gray-500">
             <i class="fas fa-spinner fa-spin fa-2x"></i>
             <p class="mt-2">Checking authentication status...</p>
         </div>
-        
+
+        <!-- Registration Form -->
         <form id="registerForm" class="space-y-4">
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Email*</label>
@@ -54,7 +48,7 @@
                 <input type="text" id="fullName"
                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
             </div>
-            
+
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Age</label>
@@ -63,15 +57,21 @@
                 </div>
                 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Gender</label>
-                    <select id="gender"
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                    <input type="text" id="location"
                         class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        <option value="">Select</option>
-                        <option value="male">Male</option>
-                        <option value="female">Female</option>
-                        <option value="other">Other</option>
-                    </select>
                 </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Gender</label>
+                <select id="gender"
+                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <option value="">Select</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                </select>
             </div>
 
             <button type="button" id="registerBtn" 
@@ -82,6 +82,13 @@
             <div id="errorMsg" class="text-red-500 text-sm text-center"></div>
         </form>
     </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+    <!-- Registration Script -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const firebaseConfig = {
@@ -92,72 +99,67 @@
                 messagingSenderId: "316017046740",
                 appId: "1:316017046740:web:ecdcfd5b8980901f4cf741"
             };
-    
+
             try {
                 // Initialize Firebase
                 firebase.initializeApp(firebaseConfig);
                 const auth = firebase.auth();
                 const db = firebase.firestore();
-    
-                // Auth state listener for existing users
+
+                // Auth state listener
                 auth.onAuthStateChanged(async (user) => {
-                    const loading = document.getElementById('loading');
-                    if (loading) loading.style.display = 'none';
-    
+                    document.getElementById('loading').style.display = 'none';
+                    
                     if (user) {
-                        console.log('User already logged in, verifying...');
+                        console.log('User authenticated, verifying...');
                         try {
-                            // Verify user document exists
-                            const doc = await db.collection("users").doc(user.uid).get();
-                            
-                            if (!doc.exists) {
-                                console.log('No user document found, logging out');
+                            const userDoc = await db.collection("users").doc(user.uid).get();
+                            if (!userDoc.exists) {
+                                console.warn('No matching document - logging out');
                                 await auth.signOut();
                                 return;
                             }
-                            
-                            console.log('Valid user found, redirecting...');
                             window.location.href = '/digital-library-system/books.html';
                         } catch (error) {
-                            console.error('Verification error:', error);
+                            console.error('Verification failed:', error);
                             alert('Error verifying user account');
                         }
                     } else {
-                        console.log('No user logged in, showing form');
-                        const form = document.getElementById('registerForm');
-                        if (form) form.style.display = 'block';
+                        document.getElementById('registerForm').style.display = 'block';
                     }
                 });
-    
+
                 // Registration handler
                 document.getElementById('registerBtn').addEventListener('click', async (e) => {
                     e.preventDefault();
                     const errorMsg = document.getElementById('errorMsg');
                     errorMsg.textContent = '';
-    
+
                     const email = document.getElementById('email').value.trim();
                     const password = document.getElementById('password').value.trim();
                     const fullName = document.getElementById('fullName').value.trim();
                     const age = document.getElementById('age').value;
                     const location = document.getElementById('location').value.trim();
                     const gender = document.getElementById('gender').value;
-    
+
                     try {
                         // Validation
                         if (!email || !password) throw new Error('Email and password are required');
                         if (password.length < 6) throw new Error('Password must be at least 6 characters');
-    
+                        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error('Invalid email format');
+
                         // Show loading state
                         const btn = document.getElementById('registerBtn');
                         btn.disabled = true;
-                        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Registering...';
-    
-                        // Create auth user
+                        btn.innerHTML = '<i class="fas fa-spinner loading-spinner mr-2"></i>Registering...';
+
+                        // Create user
                         const userCredential = await auth.createUserWithEmailAndPassword(email, password);
                         const userId = userCredential.user.uid;
-    
-                        // Create user document with UID as document ID
+
+                        // Create Firestore document
                         await db.collection("users").doc(userId).set({
+                            uid: userId,
                             email: email,
                             role: "user",
                             fullName: fullName || null,
@@ -168,11 +170,12 @@
                             lastActive: firebase.firestore.FieldValue.serverTimestamp(),
                             status: "active"
                         });
-    
-                        console.log('Registration successful - auth listener will handle redirect');
-    
+
+                        // Force auth refresh
+                        await userCredential.user.getIdToken(true);
+
                     } catch (error) {
-                        console.error("Registration error:", error);
+                        console.error('Registration failed:', error);
                         errorMsg.textContent = error.message;
                         
                         // Cleanup failed registration
@@ -185,11 +188,11 @@
                         btn.disabled = false;
                     }
                 });
-    
+
             } catch (error) {
                 console.error('Initialization error:', error);
                 document.getElementById('loading').innerHTML = 
-                    '<p class="text-red-500">Application failed to initialize. Please refresh.</p>';
+                    '<p class="text-red-500">Application initialization failed. Please refresh.</p>';
             }
         });
     </script>
