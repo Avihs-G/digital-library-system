@@ -83,99 +83,118 @@
         </form>
     </div>
     <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const firebaseConfig = {
-            apiKey: "AIzaSyBL0n0BJsba-CEvYmyOVJ3aTHSntWXNx84",
-            authDomain: "dls-digital-library-system.firebaseapp.com",
-            projectId: "dls-digital-library-system",
-            storageBucket: "dls-digital-library-system.appspot.com",
-            messagingSenderId: "316017046740",
-            appId: "1:316017046740:web:ecdcfd5b8980901f4cf741"
-        };
-
-        try {
-            // Initialize Firebase
-            firebase.initializeApp(firebaseConfig);
-            const auth = firebase.auth();
-            const db = firebase.firestore();
-
-            // Auth state listener
-            auth.onAuthStateChanged(user => {
-                const loading = document.getElementById('loading');
-                if (loading) loading.style.display = 'none';
-                
-                if (user) {
-                    console.log('Redirecting authenticated user');
-                    window.location.href = '/digital-library-system/books.html';
-                } else {
-                    console.log('Showing registration form');
-                    const form = document.getElementById('registerForm');
-                    if (form) form.style.display = 'block';
-                }
-            });
-            
-            // Registration handler
-            document.getElementById('registerBtn').addEventListener('click', async (e) => {
-                e.preventDefault();
-                const errorMsg = document.getElementById('errorMsg');
-                errorMsg.textContent = '';
-                
-                const email = document.getElementById('email').value.trim();
-                const password = document.getElementById('password').value.trim();
-                const fullName = document.getElementById('fullName').value.trim();
-                const age = document.getElementById('age').value;
-                const gender = document.getElementById('gender').value;
+        document.addEventListener('DOMContentLoaded', () => {
+            const firebaseConfig = {
+                apiKey: "AIzaSyBL0n0BJsba-CEvYmyOVJ3aTHSntWXNx84",
+                authDomain: "dls-digital-library-system.firebaseapp.com",
+                projectId: "dls-digital-library-system",
+                storageBucket: "dls-digital-library-system.appspot.com",
+                messagingSenderId: "316017046740",
+                appId: "1:316017046740:web:ecdcfd5b8980901f4cf741"
+            };
     
-                try {
-                    // Validation
-                    if (!email || !password) throw new Error('Email and password are required');
-                    if (password.length < 6) throw new Error('Password must be at least 6 characters');
-                    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error('Invalid email format');
+            try {
+                firebase.initializeApp(firebaseConfig);
+                const auth = firebase.auth();
+                const db = firebase.firestore();
     
-                    // Show loading state
-                    const btn = document.getElementById('registerBtn');
-                    btn.innerHTML = '<i class="fas fa-spinner loading-spinner mr-2"></i>Registering...';
-                    btn.disabled = true;
+                auth.onAuthStateChanged(async (user) => {
+                    if (user) {
+                        console.log('User authenticated, verifying Firestore record...');
+                        try {
+                            // Verify if user document exists
+                            const doc = await db.collection("users").doc(user.uid).get();
+                            if (!doc.exists) {
+                                console.error('Firestore document missing!');
+                                await auth.signOut();
+                                window.location.reload();
+                            } else {
+                                window.location.href = '/digital-library-system/books.html';
+                            }
+                        } catch (error) {
+                            console.error('Document verification failed:', error);
+                        }
+                    } else {
+                        document.getElementById('registerForm').style.display = 'block';
+                    }
+                });
     
-                    // 1. Create user in Authentication
-                    const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-                    const userId = userCredential.user.uid;
-    
-                    // 2. Create user document in Firestore
-                    await db.collection("users").doc(userId).set({
-                        uid: userId,
-                        email: email,
-                        fullName: fullName || '',
-                        age: age ? parseInt(age) : null,
-                        gender: gender || 'not-specified',
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                        lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
-                        status: 'active'
-                    });
-    
-                    console.log('User document created successfully');
-    
-                } catch (error) {
-                    console.error('Registration error:', error);
-                    errorMsg.textContent = error.message;
+                document.getElementById('registerBtn').addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    const errorMsg = document.getElementById('errorMsg');
+                    errorMsg.textContent = '';
                     
-                    // Reset button
-                    const btn = document.getElementById('registerBtn');
-                    if (btn) {
+                    const email = document.getElementById('email').value.trim();
+                    const password = document.getElementById('password').value.trim();
+                    const fullName = document.getElementById('fullName').value.trim();
+                    const age = document.getElementById('age').value;
+                    const gender = document.getElementById('gender').value;
+    
+                    try {
+                        if (!email || !password) throw new Error('Email and password are required');
+                        if (password.length < 6) throw new Error('Password must be at least 6 characters');
+                        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error('Invalid email format');
+    
+                        const btn = document.getElementById('registerBtn');
+                        btn.innerHTML = '<i class="fas fa-spinner loading-spinner mr-2"></i>Registering...';
+                        btn.disabled = true;
+    
+                        // 1. Create auth user
+                        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                        const userId = userCredential.user.uid;
+                        console.log('Auth UID:', userId);
+    
+                        // 2. Create Firestore document
+                        const userData = {
+                            uid: userId,
+                            email: email,
+                            fullName: fullName || '',
+                            age: age ? parseInt(age) : null,
+                            gender: gender || 'not-specified',
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                            lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
+                            status: 'active'
+                        };
+    
+                        await db.collection("users").doc(userId).set(userData);
+                        console.log('Firestore document created:', userData);
+    
+                        // 3. Force refresh auth state
+                        await userCredential.user.getIdToken(true);
+                        console.log('Registration complete');
+    
+                    } catch (error) {
+                        console.error('Registration error:', error);
+                        errorMsg.textContent = this.formatFirebaseError(error);
+                        
+                        // Cleanup failed registration
+                        if (auth.currentUser) {
+                            await auth.currentUser.delete();
+                            console.log('Rolled back auth user');
+                        }
+                        
+                        const btn = document.getElementById('registerBtn');
                         btn.innerHTML = '<i class="fas fa-user-plus mr-2"></i>Register';
                         btn.disabled = false;
                     }
-                }
-            });
-
-        } catch (error) { // This was missing in your code
-            console.error('Initialization error:', error);
-            const loading = document.getElementById('loading');
-            if (loading) {
-                loading.innerHTML = '<p class="text-red-500">Error initializing application. Please refresh the page.</p>';
+                });
+    
+            } catch (error) {
+                console.error('Initialization error:', error);
+                document.getElementById('loading').innerHTML = 
+                    '<p class="text-red-500">Application initialization failed. Please try again later.</p>';
             }
+        });
+    
+        function formatFirebaseError(error) {
+            const messages = {
+                'auth/email-already-in-use': 'Email already registered',
+                'auth/invalid-email': 'Invalid email address',
+                'auth/weak-password': 'Password must be at least 6 characters',
+                'permission-denied': 'Database error: Contact support'
+            };
+            return messages[error.code] || error.message;
         }
-    });
     </script>
 </body>
 </html>
