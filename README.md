@@ -1,6 +1,6 @@
 # 📚 Digital Library System
 
-A web-based digital library platform that allows users to **browse**, **search** and **Add Books** , with a secure **authentication system** and a robust **admin interface** to manage the collection. Built with **HTML**, **Tailwind CSS**, **JavaScript**, and **Firebase (Auth + Firestore)**.
+A web-based digital library platform that allows users to **browse**, **search**, and **download books**, with a secure **authentication system** and a focused **admin interface** to manage book content. Built using **HTML**, **Tailwind CSS**, **JavaScript**, and **Firebase (Auth + Firestore)**.
 
 ---
 
@@ -23,50 +23,62 @@ A web-based digital library platform that allows users to **browse**, **search**
 
 ## 📖 Introduction
 
-The **Digital Library System** is an academic mini-project that offers a modern interface for students and administrators to interact with a digital book repository.  
-It supports two user roles:
-- **Users** who can search, view, bookmark, and suggest books.
-- **Admins** who can manage the entire book collection.
+The **Digital Library System** is an academic mini-project designed to streamline book access for students and staff through a clean, modern web interface.  
+It includes two roles:
+- **Users** – Can browse, search, and download books.
+- **Admins** – Can access everything users can, plus manage (add/edit/delete) book records.
 
-This project was built from scratch using frontend technologies and serverless backend services like Firebase.
+All data is stored and synced in real-time using **Firebase Firestore**.
 
 ---
 
 ## ✨ Features
 
 ### 🔐 Authentication
-- Firebase Email/Password-based secure login
-- Persistent sessions and auto-redirect on auth state
-- Role-based access: user vs admin
+A secure Firebase-based login system using **email and password**:
+- Validates and stores user credentials securely via Firebase Authentication.
+- Automatically redirects users based on authentication status.
+- Ensures only authenticated users can access book-related features.
 
-### 👤 User Profile
-- View personal details: name, gender, age, location
-- View account info: status, role, join date, last active
-- Edit profile option with validation
-- Tab-based profile navigation (Details / Edit)
+---
 
-### 📚 Library Interface
-- Browse all books with cover thumbnails
-- Search by keyword or filter by category
-- Bookmark favorite books
-- Suggest new books via form submission
+### 👤 My Profile
+Users can view their personal profile information, fetched directly from Firestore:
+- **Basic Information**: Full Name, Age, Gender, and Location.
+- **Account Details**: Role (User/Admin), Account Status (Active/Restricted), Join Date, and Last Active Time.
+- If a value is missing, it's shown as **"Not available"**.
+- Profile information is editable via a modal form (excluding email), and changes are updated in Firestore.
 
-### ⚙️ Admin Panel
-- Add new books with cover URL and file link
-- Edit or delete books from Firestore
+---
+
+### 📚 View Books
+A responsive and interactive interface to explore all books in the library:
+- Books are listed with **cover images**, **title**, **author**, and a **Download** button.
+- Users can **search** for books by title or author using a dynamic search bar.
+- All downloads are saved in the user's **Download History**, including a timestamp.
+
+---
+
+### 🛠️ Admin Book Management
+Admins have access to a powerful book management interface:
+- **Add Books**: Upload new books using a form with title, author, category, file URL, and cover image.
+- **Edit Books**: Modify book details inline and save updates directly to Firestore.
+- **Delete Books**: Permanently remove books from the collection.
+
+> Admins have the same view as regular users, with the addition of book management features.
 
 ---
 
 ## 🧑‍💻 Technologies Used
 
-| Technology         | Purpose                                      |
-|--------------------|----------------------------------------------|
-| **HTML5**          | Page structure                               |
-| **Tailwind CSS**   | Styling and responsive design                |
-| **JavaScript (ES6)** | Logic, DOM manipulation                     |
-| **Firebase Auth**  | Secure authentication                        |
-| **Firebase Firestore** | Real-time NoSQL database for data storage  |
-| **Font Awesome**   | Icons for UI buttons                         |
+| Technology           | Purpose                                    |
+|----------------------|--------------------------------------------|
+| **HTML5**            | Structure and semantic layout              |
+| **Tailwind CSS**     | Styling and responsive UI design           |
+| **JavaScript (ES6)** | Client-side logic and interactivity        |
+| **Firebase Auth**    | Secure authentication and session control  |
+| **Firebase Firestore** | NoSQL database for real-time data syncing |
+| **Font Awesome**     | Icon library for UI buttons and actions    |
 
 ---
 
@@ -76,16 +88,16 @@ This project was built from scratch using frontend technologies and serverless b
 digital-library-system/
 ├── index.html              # Login and Register page
 ├── profile.html            # User profile and edit page
-├── books.html              # View, search, manage books
+├── books.html              # View and manage books
 ├── js/
-│   └── app.js              #  App logic
-│   └── auth.js             # Authentication logic
-│   └── books.js            # Books page logic
-│   └── firebaseConfig.js   # Firebase initialization
+│   └── app.js              # Shared logic and UI interaction
+│   └── auth.js             # Authentication logic (login/register)
+│   └── books.js            # View books and admin book management
+│   └── firebaseConfig.js   # Firebase initialization (no logic here)
 ├── css/
-│   └── styles.css          # Custom Tailwind overrides (if any)
+│   └── styles.css          # Custom Tailwind overrides (if needed)
 ├── assets/
-│   └── images/             # Book covers, icons
+│   └── images/             # Book covers and UI icons
 └── README.md               # Project documentation
 ```
 
@@ -93,11 +105,12 @@ digital-library-system/
 
 ## ⚙️ Firebase Configuration
 
-To use Firebase services, configure your Firebase project:
+To get started with Firebase, follow these steps:
 
-1. Create a Firebase project at [firebase.google.com](https://firebase.google.com)
-2. Enable **Email/Password Authentication**
-3. Create a **Firestore Database** with the following collections:
+1. Go to [firebase.google.com](https://firebase.google.com) and create a project.
+2. Enable **Email/Password Authentication** under **Authentication**.
+3. Enable **Cloud Firestore** from the Firebase console.
+4. Create the following collections and sample documents:
 
 ### `users` collection:
 ```json
@@ -105,11 +118,11 @@ To use Firebase services, configure your Firebase project:
   "fullName": "Alice Smith",
   "age": 22,
   "gender": "female",
-  "location": "Mumbai",
-  "role": "user" or 'admin',
+  "location": "Hyderabad",
+  "role": "user",
   "status": "active",
-  "createdAt": "...",
-  "lastActive": "..."
+  "createdAt": "timestamp",
+  "lastActive": "timestamp"
 }
 ```
 
@@ -119,19 +132,9 @@ To use Firebase services, configure your Firebase project:
   "title": "Rich Dad Poor Dad",
   "author": "Robert Kiyosaki",
   "category": "Finance",
-  "fileUrl": "https://...",
-  "coverUrl": "https://...",
+  "fileUrl": "https://example.com/book.pdf",
+  "coverUrl": "https://example.com/cover.jpg",
   "uploadedBy": "admin"
-}
-```
-
-### `suggestions` collection:
-```json
-{
-  "title": "New Book Title",
-  "author": "Requested Author",
-  "submittedBy": "userEmail",
-  "timestamp": "..."
 }
 ```
 
@@ -141,87 +144,88 @@ To use Firebase services, configure your Firebase project:
 
 1. **Clone the Repository**
    ```bash
-   git clone https://github.com/yourusername/digital-library-system.git
+   git clone https://github.com/avihs-g/digital-library-system.git
    cd digital-library-system
    ```
 
-2. **Set Up Firebase**
-   - Copy your Firebase config and paste it inside `app.js` under `const firebaseConfig = { ... }`
+2. **Configure Firebase**
+   - Copy your Firebase config object from the console.
+   - Paste it into `firebaseConfig.js` like this:
+   ```js
+   const firebaseConfig = {
+     apiKey: "...",
+     authDomain: "...",
+     projectId: "...",
+     ...
+   };
+   ```
 
-3. **Open in Browser**
-   - Open `index.html` or `books.html` in a browser
-   - For best results, use **Live Server** in VS Code
+3. **Open the App**
+   - Launch `index.html` or `books.html` using **Live Server** (recommended).
+   - Make sure your browser allows Firebase access.
 
 ---
 
 ## 🔐 Roles & Permissions
 
-| Role   | Capabilities                                                     |
-|--------|------------------------------------------------------------------|
-| User   | View/Search books, View documents, Download books Edit profile   |
-| Admin  | All user permissions + Add/Edit/Delete books, Review suggestions|
+| Role   | Access Level                                                                 |
+|--------|------------------------------------------------------------------------------|
+| User   | View profile, edit profile, view books, search and download books            |
+| Admin  | All user permissions + add, edit, and delete books in Firestore             |
+
+> ⚠️ Admins cannot manage user accounts or see/edit other users' data.
 
 ---
 
 ## 📸 Screenshots
 
-> *(You can add real screenshots of the following pages)*
+*Add actual screenshots in your final submission for:*
 
-- Login & Register
-- Profile tab (View/Edit)
-- Books dashboard
-- Admin book management
+- Login/Register Page
+- My Profile Dashboard (View/Edit)
+- View Books (as User)
+- Admin Book Management Panel
 
 ---
 
 ## 🔮 Future Enhancements
 
-- 🗂️ EPUB/PDF reader integration
+- 📖 Integrated EPUB/PDF reader
+- 📊 Book statistics for admins
 - 🌙 Dark mode toggle
-- 📊 Admin dashboard with Statistics
-- 🗣️ Book comments and star ratings
-- 📤 Upload support for book files by admin
+- 📦 File upload support via Firebase Storage
 
 ---
 
 ## 🤖 AI Involvement
 
-This mini-project was built with the assistance of multiple AI tools for faster and optimized development:
+This project was built using the assistance of AI tools to improve speed and efficiency.
 
-| AI Tool     | Contribution Area                        |
-|-------------|-------------------------------------------|
-| **ChatGPT** | Firebase integration, JavaScript logic, UI templates |
-| **Gemini**  | Feature suggestions, UI logic validation |
-| **GitHub Copilot** | Live code auto-completion & refactoring   |
-
-> These AI tools were crucial for:
-> - Structuring clean and modular code
-> - Writing real-time database logic
-> - Improving frontend UX with Tailwind CSS
-> - Debugging and error fixing
+| AI Tool         | Contribution Area                          |
+|------------------|--------------------------------------------|
+| **ChatGPT**      | Code logic, Firebase rules, UI improvements |
+| **Gemini**       | Idea validation, role-based design help     |
+| **GitHub Copilot** | Real-time suggestions and error fixing     |
 
 ---
 
-
-## 📌 Contributions
+## 🙋 Contributors
 
 ### Development Team
-*The following individuals were primarily responsible for the design, development, and implementation of the project.*
-
 - **Your Full Name**
 - **P. Shruthi**
 - **P. Akshitha**
 - **O. Kavitha**
 - **M. Poojitha**
 
-### Support and Guidance
-- **Shiva G.** – Provided external support in development and testing of the project.
-- **Ramakrishna** – Faculty Mentor. Guided the team throughout the project.
+### Support & Guidance
+- **Shiva G.** – Provided external support on Developement, Testing of the project.
+- **Ramakrishna** – Faculty mentor, Guided team throughout the project.
 
+---
 
 ## 📄 License
 
-This project is for **educational and academic** purposes only.  
-You may modify or extend it freely for personal or institutional use.
-
-
+This project is created solely for **academic and educational** purposes.  
+It is open to use, modify, and improve within personal or institutional environments.
+```
