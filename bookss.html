@@ -142,9 +142,6 @@
             <button data-section="search-books" class="nav-link text-blue-600 hover:text-blue-800">
                 Search Books
             </button>
-            <button data-section="book-suggestions" class="nav-link text-blue-600 hover:text-blue-800 user-only hidden">
-                Book Suggestions
-            </button>
             <button data-section="admin-book-management" class="nav-link text-blue-600 hover:text-blue-800 admin-only hidden">
                 Admin Book Management
             </button>
@@ -389,14 +386,6 @@
             </div>
         </section>
     
-        <!-- Review Management Section -->
-        <section id="review-management" class="section-content bg-white shadow-md rounded-lg p-6 mb-8 hidden">
-            <h2 class="text-xl font-semibold mb-4">Review Management</h2>
-            <div id="review-list">
-                <!-- Reviews will be dynamically inserted here -->
-            </div>
-        </section>
-    
             <!-- Book Viewer Modal -->
         <div id="book-viewer" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
             <div class="container mx-auto h-full p-4">
@@ -491,52 +480,6 @@
                                         <p id="viewer-drm"></p>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-        
-                    <!-- Reviews Section -->
-                    <div id="single-reviews-section" class="p-6 border-t">
-                        <button id="toggle-reviews" class="flex justify-between items-center w-full mb-4 hover:bg-gray-50 p-2 rounded">
-                            <div class="flex items-center">
-                                <h4 class="text-lg font-semibold">Reviews</h4>
-                            </div>
-                            <span class="text-xl font-bold transform transition-transform duration-200">+</span>
-                        </button>
-                        
-                        <div id="reviews-content" class="hidden">
-                            <!-- Add Review Form -->
-                            <div id="add-review-section" class="mb-6">
-                                <form id="review-form" class="space-y-4">
-                                    <div class="rating-section flex items-center space-x-2">
-                                        <span>Rating:</span>
-                                        <div id="star-rating" class="flex">
-                                            <button type="button" class="star-btn" data-rating="1">★</button>
-                                            <button type="button" class="star-btn" data-rating="2">★</button>
-                                            <button type="button" class="star-btn" data-rating="3">★</button>
-                                            <button type="button" class="star-btn" data-rating="4">★</button>
-                                            <button type="button" class="star-btn" data-rating="5">★</button>
-                                        </div>
-                                        <span id="selected-rating">0</span>
-                                    </div>
-                                    <textarea 
-                                        id="review-text" 
-                                        class="w-full px-3 py-2 border rounded" 
-                                        rows="4" 
-                                        placeholder="Write your review here..."
-                                    ></textarea>
-                                    <button 
-                                        type="submit" 
-                                        class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                                    >
-                                        Submit Review
-                                    </button>
-                                </form>
-                            </div>
-        
-                            <!-- Reviews Display Area -->
-                            <div id="reviews-container" class="space-y-4 max-h-96 overflow-y-auto">
-                                <!-- Reviews will be dynamically populated here -->
                             </div>
                         </div>
                     </div>
