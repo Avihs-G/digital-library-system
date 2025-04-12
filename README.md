@@ -212,7 +212,6 @@ This project was built using the assistance of AI tools to improve speed and eff
 ## 🙋 Contributors
 
 ### Development Team
-- **Your Full Name**
 - **P. Shruthi**
 - **P. Akshitha**
 - **O. Kavitha**
