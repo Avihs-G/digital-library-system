@@ -1,6 +1,6 @@
 # 📚 Digital Library System
 
-A web-based digital library platform that allows users to **browse**, **search**, **bookmark**, and **suggest books**, with a secure **authentication system** and a robust **admin interface** to manage the collection. Built with **HTML**, **Tailwind CSS**, **JavaScript**, and **Firebase (Auth + Firestore)**.
+A web-based digital library platform that allows users to **browse**, **search** and **Add Books** , with a secure **authentication system** and a robust **admin interface** to manage the collection. Built with **HTML**, **Tailwind CSS**, **JavaScript**, and **Firebase (Auth + Firestore)**.
 
 ---
 
@@ -54,7 +54,6 @@ This project was built from scratch using frontend technologies and serverless b
 ### ⚙️ Admin Panel
 - Add new books with cover URL and file link
 - Edit or delete books from Firestore
-- View all user-submitted suggestions
 
 ---
 
@@ -77,7 +76,7 @@ This project was built from scratch using frontend technologies and serverless b
 digital-library-system/
 ├── index.html          # Login and Register page
 ├── profile.html        # User profile and edit page
-├── books.html          # View, search, bookmark, suggest, manage books
+├── books.html          # View, search, manage books
 ├── app.js              # Firebase initialization and app logic
 ├── css/
 │   └── styles.css      # Custom Tailwind overrides (if any)
@@ -103,7 +102,7 @@ To use Firebase services, configure your Firebase project:
   "age": 22,
   "gender": "female",
   "location": "Mumbai",
-  "role": "user",
+  "role": "user" or 'admin',
   "status": "active",
   "createdAt": "...",
   "lastActive": "..."
@@ -155,7 +154,7 @@ To use Firebase services, configure your Firebase project:
 
 | Role   | Capabilities                                                     |
 |--------|------------------------------------------------------------------|
-| User   | View/Search books, Bookmark, Suggest books, Edit profile        |
+| User   | View/Search books, View documents, Download books Edit profile   |
 | Admin  | All user permissions + Add/Edit/Delete books, Review suggestions|
 
 ---
@@ -168,7 +167,6 @@ To use Firebase services, configure your Firebase project:
 - Profile tab (View/Edit)
 - Books dashboard
 - Admin book management
-- Suggestion form
 
 ---
 
@@ -176,10 +174,9 @@ To use Firebase services, configure your Firebase project:
 
 - 🗂️ EPUB/PDF reader integration
 - 🌙 Dark mode toggle
-- 📊 Admin dashboard with charts
+- 📊 Admin dashboard with Statistics
 - 🗣️ Book comments and star ratings
 - 📤 Upload support for book files by admin
-- 🔔 Notifications for suggestions or approvals
 
 ---
 
@@ -201,12 +198,22 @@ This mini-project was built with the assistance of multiple AI tools for faster 
 
 ---
 
-## 🙋 Contributors
 
-- **Your Full Name** – Developer & Presenter  
-- *(Guided by: Faculty Name / AI Mentor)*
+## 📌 Contributions
 
----
+### Development Team
+*The following individuals were primarily responsible for the design, development, and implementation of the project.*
+
+- **Your Full Name**
+- **P. Shruthi**
+- **P. Akshitha**
+- **O. Kavitha**
+- **M. Poojitha**
+
+### Support and Guidance
+- **Shiva G.** – Provided external support in development and testing of the project.
+- **Ramakrishna** – Faculty Mentor. Guided the team throughout the project.
+
 
 ## 📄 License
 
