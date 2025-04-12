@@ -1,0 +1,289 @@
+Here is the HTML version of your `README.md` content:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Library System</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 text-gray-900">
+
+    <div class="container mx-auto p-6">
+
+        <h1 class="text-3xl font-bold mb-4">📚 Digital Library System</h1>
+        <p class="mb-4">A web-based digital library platform that allows users to <strong>browse</strong>, <strong>search</strong>, and <strong>download books</strong>, with a secure <strong>authentication system</strong> and a focused <strong>admin interface</strong> to manage book content. Built using <strong>HTML</strong>, <strong>Tailwind CSS</strong>, <strong>JavaScript</strong>, and <strong>Firebase (Auth + Firestore)</strong>.</p>
+
+        <hr class="my-6">
+
+        <h2 class="text-2xl font-semibold mb-4">📌 Table of Contents</h2>
+        <ul class="list-disc pl-6 space-y-2">
+            <li><a href="#introduction">📖 Introduction</a></li>
+            <li><a href="#features">✨ Features</a></li>
+            <li><a href="#technologies-used">🧑‍💻 Technologies Used</a></li>
+            <li><a href="#project-structure">📁 Project Structure</a></li>
+            <li><a href="#firebase-configuration">⚙️ Firebase Configuration</a></li>
+            <li><a href="#setup-instructions">🚀 Setup Instructions</a></li>
+            <li><a href="#roles-permissions">🔐 Roles & Permissions</a></li>
+            <li><a href="#screenshots">📸 Screenshots</a></li>
+            <li><a href="#future-enhancements">🔮 Future Enhancements</a></li>
+            <li><a href="#ai-involvement">🤖 AI Involvement</a></li>
+            <li><a href="#contributors">🙋 Contributors</a></li>
+            <li><a href="#license">📄 License</a></li>
+        </ul>
+
+        <hr class="my-6">
+
+        <h2 id="introduction" class="text-2xl font-semibold mb-4">📖 Introduction</h2>
+        <p>The <strong>Digital Library System</strong> is an academic mini-project designed to streamline book access for students and staff through a clean, modern web interface.</p>
+        <p>It includes two roles:</p>
+        <ul class="list-disc pl-6">
+            <li><strong>Users</strong> – Can browse, search, and download books.</li>
+            <li><strong>Admins</strong> – Can access everything users can, plus manage (add/edit/delete) book records.</li>
+        </ul>
+        <p>All data is stored and synced in real-time using <strong>Firebase Firestore</strong>.</p>
+
+        <hr class="my-6">
+
+        <h2 id="features" class="text-2xl font-semibold mb-4">✨ Features</h2>
+        
+        <h3 class="text-xl font-semibold mb-2">🔐 Authentication</h3>
+        <p>A secure Firebase-based login system using <strong>email and password</strong>:</p>
+        <ul class="list-disc pl-6">
+            <li>Validates and stores user credentials securely via Firebase Authentication.</li>
+            <li>Automatically redirects users based on authentication status.</li>
+            <li>Ensures only authenticated users can access book-related features.</li>
+        </ul>
+
+        <h3 class="text-xl font-semibold mb-2">👤 My Profile</h3>
+        <p>Users can view their personal profile information, fetched directly from Firestore:</p>
+        <ul class="list-disc pl-6">
+            <li><strong>Basic Information</strong>: Full Name, Age, Gender, and Location.</li>
+            <li><strong>Account Details</strong>: Role (User/Admin), Account Status (Active/Restricted), Join Date, and Last Active Time.</li>
+            <li>If a value is missing, it's shown as <strong>"Not available"</strong>.</li>
+            <li>Profile information is editable via a modal form (excluding email), and changes are updated in Firestore.</li>
+        </ul>
+
+        <h3 class="text-xl font-semibold mb-2">📚 View Books</h3>
+        <p>A responsive and interactive interface to explore all books in the library:</p>
+        <ul class="list-disc pl-6">
+            <li>Books are listed with <strong>cover images</strong>, <strong>title</strong>, <strong>author</strong>, and a <strong>Download</strong> button.</li>
+            <li>Users can <strong>search</strong> for books by title or author using a dynamic search bar.</li>
+            <li>All downloads are saved in the user's <strong>Download History</strong>, including a timestamp.</li>
+        </ul>
+
+        <h3 class="text-xl font-semibold mb-2">🛠️ Admin Book Management</h3>
+        <p>Admins have access to a powerful book management interface:</p>
+        <ul class="list-disc pl-6">
+            <li><strong>Add Books</strong>: Upload new books using a form with title, author, category, file URL, and cover image.</li>
+            <li><strong>Edit Books</strong>: Modify book details inline and save updates directly to Firestore.</li>
+            <li><strong>Delete Books</strong>: Permanently remove books from the collection.</li>
+        </ul>
+        <p><em>Admins have the same view as regular users, with the addition of book management features.</em></p>
+
+        <hr class="my-6">
+
+        <h2 id="technologies-used" class="text-2xl font-semibold mb-4">🧑‍💻 Technologies Used</h2>
+        <table class="table-auto border-collapse w-full mb-6">
+            <thead>
+                <tr>
+                    <th class="px-4 py-2 border">Technology</th>
+                    <th class="px-4 py-2 border">Purpose</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="px-4 py-2 border">HTML5</td>
+                    <td class="px-4 py-2 border">Structure and semantic layout</td>
+                </tr>
+                <tr>
+                    <td class="px-4 py-2 border">Tailwind CSS</td>
+                    <td class="px-4 py-2 border">Styling and responsive UI design</td>
+                </tr>
+                <tr>
+                    <td class="px-4 py-2 border">JavaScript (ES6)</td>
+                    <td class="px-4 py-2 border">Client-side logic and interactivity</td>
+                </tr>
+                <tr>
+                    <td class="px-4 py-2 border">Firebase Auth</td>
+                    <td class="px-4 py-2 border">Secure authentication and session control</td>
+                </tr>
+                <tr>
+                    <td class="px-4 py-2 border">Firebase Firestore</td>
+                    <td class="px-4 py-2 border">NoSQL database for real-time data syncing</td>
+                </tr>
+                <tr>
+                    <td class="px-4 py-2 border">Font Awesome</td>
+                    <td class="px-4 py-2 border">Icon library for UI buttons and actions</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <hr class="my-6">
+
+        <h2 id="project-structure" class="text-2xl font-semibold mb-4">📁 Project Structure</h2>
+        <pre class="bg-gray-800 text-white p-4 rounded">
+digital-library-system/
+├── index.html              # Login and Register page
+├── profile.html            # User profile and edit page
+├── books.html              # View and manage books
+├── js/
+│   └── app.js              # Shared logic and UI interaction
+│   └── auth.js             # Authentication logic (login/register)
+│   └── books.js            # View books and admin book management
+│   └── firebaseConfig.js   # Firebase initialization (no logic here)
+├── css/
+│   └── styles.css          # Custom Tailwind overrides (if needed)
+├── assets/
+│   └── images/             # Book covers and UI icons
+└── README.md               # Project documentation
+        </pre>
+
+        <hr class="my-6">
+
+        <h2 id="firebase-configuration" class="text-2xl font-semibold mb-4">⚙️ Firebase Configuration</h2>
+        <p>To get started with Firebase, follow these steps:</p>
+        <ol class="list-decimal pl-6 mb-4">
+            <li>Go to <a href="https://firebase.google.com" target="_blank" class="text-blue-500">firebase.google.com</a> and create a project.</li>
+            <li>Enable <strong>Email/Password Authentication</strong> under <strong>Authentication</strong>.</li>
+            <li>Enable <strong>Cloud Firestore</strong> from the Firebase console.</li>
+            <li>Create the following collections and sample documents:</li>
+        </ol>
+
+        <h3 class="text-xl font-semibold mb-2">`users` collection:</h3>
+        <pre class="bg-gray-800 text-white p-4 rounded">
+{
+  "fullName": "Alice Smith",
+  "age": 22,
+  "gender": "female",
+  "location": "Hyderabad",
+  "role": "user",
+  "status": "active",
+  "createdAt": "timestamp",
+  "lastActive": "timestamp"
+}
+        </pre>
+
+        <h3 class="text-xl font-semibold mb-2">`books` collection:</h3>
+        <pre class="bg-gray-800 text-white p-4 rounded">
+{
+  "title": "Rich Dad Poor Dad",
+  "author": "Robert Kiyosaki",
+  "category": "Finance",
+  "fileUrl": "https://example.com/book.pdf",
+  "coverUrl": "https://example.com/cover.jpg",
+  "uploadedBy": "admin"
+}
+        </pre>
+
+        <hr class="my-6">
+
+        <h2 id="setup-instructions" class="text-2xl font-semibold mb-4">🚀 Setup Instructions</h2>
+        <ol class="list-decimal pl-6 mb-4">
+            <li><strong>Clone the Repository</strong></li>
+            <pre class="bg-gray-800 text-white p-4 rounded">git clone https://github.com/avihs-g/digital-library-system.git
+cd digital-library-system</pre>
+            <li><strong>Configure Firebase</strong></li>
+            <p>Copy your Firebase config object from the console.</p>
+            <pre class="bg-gray-800 text-white p-4 rounded">const firebaseConfig = {
+  apiKey: "...",
+  authDomain: "...",
+  projectId: "...",
+  ...
+};</pre>
+            <li><strong>Open the App</strong></li>
+            <p>Launch <code>index.html</code> or <code>books.html</code> using <strong>Live Server</strong> (recommended).</p>
+            <p>Make sure your browser allows Firebase access.</p>
+        </ol>
+
+        <hr class="my-6">
+
+        <h2 id="roles-permissions" class="text-2xl font-semibold mb-4">🔐 Roles & Permissions</h2>
+        <table class="table-auto border-collapse w-full mb-6">
+            <thead>
+                <tr>
+                    <th class="px-4 py-2 border">Role</th>
+                    <th class="px-4 py-2 border">Access Level</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="px-4 py-2 border">User</td>
+                    <td class="px-4 py-2 border">View profile, edit profile, view books, search and download books</td>
+                </tr>
+                <tr>
+                    <td class="px-4 py-2 border">Admin</td>
+                    <td class="px-4 py-2 border">All user permissions + add, edit, and delete books in Firestore</td>
+                </tr>
+            </tbody>
+        </table>
+        <p><em>⚠️ Admins cannot manage user accounts or see/edit other users' data.</em></p>
+
+        <hr class="my-6">
+
+        <h2 id="screenshots" class="text-2xl font-semibold mb-4">📸 Screenshots</h2>
+        <p><em>Add actual screenshots in your final submission for:</em></p>
+        <ul class="list-disc pl-6">
+            <li>Login/Register Page</li>
+            <li>My Profile Dashboard (View/Edit)</li>
+            <li>View Books (as User)</li>
+            <li>Admin Book Management Panel</li>
+        </ul>
+
+        <hr class="my-6">
+
+        <h2 id="future-enhancements" class="text-2xl font-semibold mb-4">🔮 Future Enhancements</h2>
+        <ul class="list-disc pl-6 mb-4">
+            <li>📖 Integrated EPUB/PDF reader</li>
+            <li>📊 Book statistics for admins</li>
+            <li>🌙 Dark mode toggle</li>
+            <li>📦 File upload support via Firebase Storage</li>
+        </ul>
+
+        <hr class="my-6">
+
+        <h2 id="ai-involvement" class="text-2xl font-semibold mb-4">🤖 AI Involvement</h2>
+        <p>This project was built using the assistance of AI tools to improve speed and efficiency.</p>
+        <table class="table-auto border-collapse w-full mb-6">
+            <thead>
+                <tr>
+                    <th class="px-4 py-2 border">AI Tool</th>
+                    <th class="px-4 py-2 border">Contribution Area</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="px-4 py-2 border">ChatGPT</td>
+                    <td class="px-4 py-2 border">Code logic, Firebase rules, UI improvements</td>
+                </tr>
+                <tr>
+                    <td class="px-4 py-2 border">Gemini</td>
+                    <td class="px-4 py-2 border">Idea validation, role-based design help</td>
+                </tr>
+                <tr>
+                    <td class="px-4 py-2 border">GitHub Copilot</td>
+                    <td class="px-4 py-2 border">Real-time suggestions and error fixing</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <hr class="my-6">
+
+        <h2 id="contributors" class="text-2xl font-semibold mb-4">🙋 Contributors</h2>
+        <h3 class="text-xl font-semibold mb-2">Development Team</h3>
+        <ul class="list-disc pl-6 mb-4">
+            <li><strong>Your Full Name</strong></li>
+            <li><strong>P. Shruthi</strong></li>
+            <li><strong>P. Akshitha</strong></li>
+            <li><strong>O. Kavitha</strong></li>
+            <li><strong>M. Poojitha</strong></li>
+        </ul>
+        <h3 class="text-xl font-semibold mb-2">Support & Guidance</h3>
+        <ul class="list-disc pl-6 mb-4">
+            <li><strong>Shiva G.</strong> – Provided external support on Development, Testing of the project.</li>
+            <li><strong>Ramakrishna</strong> – Faculty mentor, Guided team throughout the project.</li>
+        </ul>
+
+        <hr class
