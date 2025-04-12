@@ -74,15 +74,19 @@ This project was built from scratch using frontend technologies and serverless b
 
 ```
 digital-library-system/
-├── index.html          # Login and Register page
-├── profile.html        # User profile and edit page
-├── books.html          # View, search, manage books
-├── app.js              # Firebase initialization and app logic
+├── index.html              # Login and Register page
+├── profile.html            # User profile and edit page
+├── books.html              # View, search, manage books
+├── js/
+│   └── app.js              #  App logic
+│   └── auth.js             # Authentication logic
+│   └── books.js            # Books page logic
+│   └── firebaseConfig.js   # Firebase initialization
 ├── css/
-│   └── styles.css      # Custom Tailwind overrides (if any)
+│   └── styles.css          # Custom Tailwind overrides (if any)
 ├── assets/
-│   └── images/         # Book covers, icons
-└── README.md           # Project documentation
+│   └── images/             # Book covers, icons
+└── README.md               # Project documentation
 ```
 
 ---
